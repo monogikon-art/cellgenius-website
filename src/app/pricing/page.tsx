@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, ArrowRight, BarChart3 } from "lucide-react";
+import { SITE } from "@/data/content";
 import styles from "./pricing.module.css";
 
 type BillingCycle = "monthly" | "annual";
@@ -145,7 +146,7 @@ export default function PricingPage() {
                         </ul>
 
                         <a
-                            href={plan.key === "enterprise" ? "/#contact" : "/#contact"}
+                            href={`${SITE.ppmSignupUrl}?plan=${plan.key}&billing=${billing}`}
                             className={`btn ${plan.popular ? "btn-primary" : "btn-outline"} ${styles.planCta}`}
                         >
                             {plan.cta} <ArrowRight size={16} />
