@@ -156,6 +156,17 @@ export const ABOUT = {
     ],
 };
 
+// ─── Trust / Social Proof Section ────────────────────────────────────────────
+export const TRUST = {
+    headline: "Trusted by teams who demand more from their tools.",
+    stats: [
+        { value: "99.9%", label: "Uptime SLA" },
+        { value: "10x", label: "Faster Reporting" },
+        { value: "50+", label: "Enterprise Modules" },
+        { value: "24/7", label: "Dedicated Support" },
+    ],
+};
+
 // ─── Contact Section ─────────────────────────────────────────────────────────
 export const CONTACT = {
     headline: "Get in Touch",
