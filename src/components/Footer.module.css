@@ -1,0 +1,131 @@
+.footer {
+    background: var(--navy-950);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 4rem;
+}
+
+.inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+}
+
+/* Brand */
+.brand {
+    max-width: 320px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.logoIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--teal-500), var(--indigo-500));
+}
+
+.logoName {
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.brandText {
+    color: var(--gray-400);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+}
+
+.contactInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.contactLink {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-500);
+    font-size: 0.813rem;
+    transition: color 0.2s;
+}
+
+.contactLink:hover {
+    color: var(--teal-400);
+}
+
+/* Columns */
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.columnTitle {
+    font-family: var(--font-heading);
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.footerLink {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--gray-400);
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.footerLink:hover {
+    color: var(--teal-400);
+}
+
+/* Bottom */
+.bottom {
+    margin-top: 3rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.copyright {
+    color: var(--gray-600);
+    font-size: 0.813rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .brand {
+        grid-column: span 2;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .inner {
+        grid-template-columns: 1fr;
+    }
+
+    .brand {
+        grid-column: span 1;
+    }
+}

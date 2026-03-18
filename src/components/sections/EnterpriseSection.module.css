@@ -1,0 +1,617 @@
+.section {
+    background: var(--navy-900);
+    padding: 6rem 0;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 4rem;
+}
+
+.headline {
+    color: var(--white);
+    margin: 1rem 0;
+}
+
+.subheadline {
+    color: var(--gray-400);
+    font-size: 1.063rem;
+    line-height: 1.7;
+}
+
+/* Feature Rows */
+.features {
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
+}
+
+/* Value Props (embedded in Enterprise) */
+.valueGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.valueCard {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.valueCard:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(14, 165, 233, 0.15);
+    transform: translateY(-4px);
+}
+
+.valueIconWrap {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(99, 102, 241, 0.15));
+    color: var(--teal-400);
+}
+
+.valueTitle {
+    color: var(--white);
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+}
+
+.valueDesc {
+    color: var(--gray-400);
+    font-size: 0.938rem;
+    line-height: 1.6;
+}
+
+.featureRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.reversed {
+    direction: rtl;
+}
+
+.reversed>* {
+    direction: ltr;
+}
+
+/* Feature Text */
+.featureText {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.featureIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(99, 102, 241, 0.12));
+    color: var(--teal-400);
+    margin-bottom: 0.25rem;
+}
+
+.featureTitle {
+    color: var(--white);
+    font-size: 1.375rem;
+}
+
+.featureDesc {
+    color: var(--gray-400);
+    font-size: 0.938rem;
+    line-height: 1.7;
+}
+
+.bullets {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.bullets li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-300);
+    font-size: 0.875rem;
+}
+
+.checkIcon {
+    color: var(--teal-400);
+    flex-shrink: 0;
+}
+
+/* Feature Visuals */
+.featureVisual {
+    display: flex;
+    justify-content: center;
+}
+
+.visualCard {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+}
+
+/* Cascade Visual */
+.cascade {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cascadeNode {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.813rem;
+    font-weight: 600;
+    width: 100%;
+    justify-content: center;
+}
+
+.nodeKPI {
+    background: rgba(14, 165, 233, 0.1);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    color: var(--teal-400);
+}
+
+.nodeOKR {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    color: var(--indigo-400);
+}
+
+.nodeProject {
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    color: var(--purple-400);
+}
+
+.nodeIcon {
+    font-size: 1rem;
+}
+
+.cascadeLine {
+    width: 2px;
+    height: 16px;
+    background: linear-gradient(to bottom, var(--teal-500), var(--indigo-500));
+    opacity: 0.4;
+}
+
+.progressRow {
+    width: 100%;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.progressItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.progressItem span {
+    font-size: 0.688rem;
+    color: var(--gray-500);
+}
+
+.progressBar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--teal-500), var(--teal-400));
+}
+
+.fillIndigo {
+    background: linear-gradient(90deg, var(--indigo-500), var(--indigo-400));
+}
+
+.fillPurple {
+    background: linear-gradient(90deg, var(--purple-500), var(--purple-400));
+}
+
+.fillGreen {
+    background: linear-gradient(90deg, var(--green-500), var(--green-400));
+}
+
+/* AI Panel */
+.aiPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.aiHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: var(--purple-400);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.aiDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--purple-400);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.aiItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.813rem;
+    color: var(--gray-300);
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.aiStatusGreen {
+    color: var(--green-400);
+    flex-shrink: 0;
+    font-size: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.aiStatusAmber {
+    color: #f59e0b;
+    flex-shrink: 0;
+    font-size: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.aiStatusRed {
+    color: var(--red-500);
+    flex-shrink: 0;
+    font-size: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.aiFooter {
+    font-size: 0.75rem;
+    color: var(--teal-400);
+    font-weight: 600;
+    text-align: right;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Delivery Grid */
+.deliveryGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.deliveryCard {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.deliveryLabel {
+    font-size: 0.625rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.deliveryValue {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--teal-400);
+}
+
+.valueGreen {
+    color: var(--green-400);
+}
+
+.valuePurple {
+    color: var(--purple-400);
+}
+
+.valueIndigo {
+    color: var(--indigo-400);
+}
+
+.deliveryBar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+
+.deliveryFill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--teal-500), var(--teal-400));
+}
+
+/* Workflow Panel */
+.workflowPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.workflowItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.workflowStep {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.813rem;
+    color: var(--gray-300);
+    font-weight: 500;
+}
+
+.stepNum {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.688rem;
+    font-weight: 700;
+    background: rgba(14, 165, 233, 0.15);
+    color: var(--teal-400);
+    flex-shrink: 0;
+}
+
+.stepIndigo {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--indigo-400);
+}
+
+.stepPurple {
+    background: rgba(168, 85, 247, 0.15);
+    color: var(--purple-400);
+}
+
+.stepGreen {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--green-400);
+}
+
+.workflowArrow {
+    text-align: center;
+    color: var(--gray-600);
+    font-size: 0.75rem;
+}
+
+/* Vendor Panel */
+.vendorPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.vendorHeader {
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: var(--teal-400);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vendorItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.vendorPackage {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.vendorPackage strong {
+    display: block;
+    font-size: 0.813rem;
+    color: var(--gray-200);
+}
+
+.vendorMeta {
+    display: block;
+    font-size: 0.688rem;
+    color: var(--gray-500);
+}
+
+.vendorDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green-400);
+    flex-shrink: 0;
+}
+
+.vendorDotAmber {
+    background: #f59e0b;
+}
+
+.vendorDotGray {
+    background: var(--gray-500);
+}
+
+.vendorBadgeGreen {
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--green-400);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    white-space: nowrap;
+}
+
+.vendorBadgeAmber {
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    white-space: nowrap;
+}
+
+.vendorBadgeGray {
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--gray-400);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    white-space: nowrap;
+}
+
+/* Agile Board */
+.agileBoard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.agileHeader {
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: var(--indigo-400);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.agileColumns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.agileCol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.agileColLabel {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.15rem;
+}
+
+.agileTask {
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.688rem;
+    font-weight: 500;
+}
+
+.agileTaskBlue {
+    background: rgba(14, 165, 233, 0.08);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    color: var(--teal-400);
+}
+
+.agileTaskAmber {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.agileTaskGreen {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    color: var(--green-400);
+}
+
+/* CTA */
+.ctaWrap {
+    text-align: center;
+    margin-top: 4rem;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .valueGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .featureRow {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .reversed {
+        direction: ltr;
+    }
+}
+
+@media (max-width: 480px) {
+    .deliveryGrid {
+        grid-template-columns: 1fr;
+    }
+}

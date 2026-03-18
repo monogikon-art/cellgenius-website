@@ -1,0 +1,123 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.scrolled {
+    background: rgba(10, 22, 40, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.6rem 0;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+}
+
+.logoIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--teal-500), var(--indigo-500));
+}
+
+.logoName {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.logoTag {
+    display: block;
+    font-size: 0.625rem;
+    color: var(--teal-400);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+/* Desktop Nav */
+.desktopNav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.navLink {
+    color: var(--gray-300);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.navLink:hover {
+    color: var(--white);
+}
+
+/* Mobile */
+.mobileToggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.mobileNav {
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem 1.5rem;
+    background: rgba(10, 22, 40, 0.98);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mobileLink {
+    color: var(--gray-300);
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobileLink:hover {
+    color: var(--white);
+}
+
+@media (max-width: 768px) {
+    .desktopNav {
+        display: none;
+    }
+
+    .mobileToggle {
+        display: block;
+    }
+
+    .mobileNav {
+        display: flex;
+    }
+}
