@@ -122,9 +122,9 @@
 /* Grid */
 .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    max-width: 1100px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    max-width: 1280px;
     margin: 0 auto;
     align-items: stretch;
 }
@@ -133,8 +133,8 @@
 .card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 24px;
-    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -169,14 +169,15 @@
 }
 
 .cardHeader {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .planName {
     color: var(--white);
-    font-size: 1.375rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
 }
+
 
 .planDesc {
     color: var(--gray-500);
@@ -200,7 +201,7 @@
 
 .price {
     font-family: var(--font-heading);
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--teal-400), var(--indigo-400));
     -webkit-background-clip: text;
@@ -281,7 +282,14 @@
 }
 
 /* Responsive */
-@media (max-width: 968px) {
+@media (max-width: 1200px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 720px;
+    }
+}
+
+@media (max-width: 640px) {
     .grid {
         grid-template-columns: 1fr;
         max-width: 480px;

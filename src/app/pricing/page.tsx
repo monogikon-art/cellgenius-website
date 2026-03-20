@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ArrowRight, BarChart3 } from "lucide-react";
+import { Check, X, ArrowRight, BarChart3 } from "lucide-react";
 import { SITE } from "@/data/content";
 import styles from "./pricing.module.css";
 
@@ -15,7 +15,7 @@ const PLANS = [
         monthlyPrice: 49,
         annualPrice: 499,
         seatLimit: "10 users",
-        projectLimit: "5 projects",
+        projectLimit: "20 projects",
         features: [
             "Core Project Management",
             "Requirements & Tasks",
@@ -23,46 +23,76 @@ const PLANS = [
             "Basic Reporting",
             "Email Notifications",
         ],
+        excluded: [
+            "No AI Capabilities",
+            "No Strategy Module",
+            "No CapEx Module",
+        ],
         cta: "Start Free Trial",
         popular: false,
     },
     {
         key: "professional",
         name: "Professional",
-        description: "For growing teams that need AI-powered insights and advanced features.",
+        description: "For growing teams that need CapEx and roadmap visibility.",
         monthlyPrice: 149,
         annualPrice: 1499,
         seatLimit: "50 users",
-        projectLimit: "25 projects",
+        projectLimit: "50 projects",
         features: [
             "Everything in Starter",
-            "AI-Powered Reports & Insights",
-            "Microsoft Teams Integration",
-            "Advanced CapEx Management",
-            "API Access",
+            "Limited AI Capabilities",
+            "CapEx Management",
+            "Roadmap Module",
             "Custom Dashboards",
+        ],
+        excluded: [
+            "No Strategy Module",
+            "No Procurement Module",
         ],
         cta: "Start Free Trial",
         popular: true,
     },
     {
+        key: "business",
+        name: "Business",
+        description: "For organizations needing strategy alignment and procurement.",
+        monthlyPrice: 249,
+        annualPrice: 2499,
+        seatLimit: "100 users",
+        projectLimit: "100 projects",
+        features: [
+            "Everything in Professional",
+            "Limited AI Capabilities",
+            "Strategy Module",
+            "Procurement Module",
+            "Advanced Reporting",
+        ],
+        excluded: [
+            "No Jira / M365 APIs",
+        ],
+        cta: "Start Free Trial",
+        popular: false,
+    },
+    {
         key: "enterprise",
         name: "Enterprise",
-        description: "For large organizations with unlimited scale and dedicated support.",
-        monthlyPrice: 499,
-        annualPrice: 4999,
+        description: "For large organizations with unlimited scale and integrations.",
+        monthlyPrice: null,
+        annualPrice: null,
         seatLimit: "Unlimited users",
         projectLimit: "Unlimited projects",
         features: [
-            "Everything in Professional",
-            "Unlimited Seats & Projects",
-            "Custom SSO / SAML",
+            "Everything in Business",
+            "Full AI Capabilities",
+            "Jira API Integration",
+            "Microsoft 365 Integration",
             "Dedicated Support & SLA",
-            "Audit Logs",
-            "On-Premise Option",
         ],
+        excluded: [],
         cta: "Contact Sales",
         popular: false,
+        contactSales: true,
     },
 ];
 
@@ -121,13 +151,19 @@ export default function PricingPage() {
                         </div>
 
                         <div className={styles.priceBlock}>
-                            <span className={styles.currency}>$</span>
-                            <span className={styles.price}>
-                                {billing === "monthly" ? plan.monthlyPrice : plan.annualPrice}
-                            </span>
-                            <span className={styles.period}>
-                                /{billing === "monthly" ? "mo" : "yr"}
-                            </span>
+                            {plan.monthlyPrice !== null ? (
+                                <>
+                                    <span className={styles.currency}>$</span>
+                                    <span className={styles.price}>
+                                        {billing === "monthly" ? plan.monthlyPrice : plan.annualPrice}
+                                    </span>
+                                    <span className={styles.period}>
+                                        /{billing === "monthly" ? "mo" : "yr"}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className={styles.price}>Custom</span>
+                            )}
                         </div>
 
                         <div className={styles.limits}>
@@ -145,8 +181,19 @@ export default function PricingPage() {
                             ))}
                         </ul>
 
+                        {plan.excluded && plan.excluded.length > 0 && (
+                            <ul className={styles.features} style={{ opacity: 0.5 }}>
+                                {plan.excluded.map((f, i) => (
+                                    <li key={`ex-${i}`} style={{ color: 'var(--color-text-muted, #666)' }}>
+                                        <X size={14} style={{ color: '#ef4444' }} />
+                                        {f}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
                         <a
-                            href={`${SITE.ppmSignupUrl}?plan=${plan.key}&billing=${billing}`}
+                            href={(plan as any).contactSales ? "/#contact" : `${SITE.ppmSignupUrl}?plan=${plan.key}&billing=${billing}`}
                             className={`btn ${plan.popular ? "btn-primary" : "btn-outline"} ${styles.planCta}`}
                         >
                             {plan.cta} <ArrowRight size={16} />
