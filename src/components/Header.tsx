@@ -36,6 +36,9 @@ export function Header() {
                             {link.label}
                         </a>
                     ))}
+                    <a href={SITE.ppmLoginUrl} className={styles.navLink}>
+                        Sign in
+                    </a>
                     <a href={SITE.ppmSignupUrl} className="btn btn-primary btn-sm">
                         Get Started
                     </a>
@@ -64,6 +67,13 @@ export function Header() {
                             {link.label}
                         </a>
                     ))}
+                    <a
+                        href={SITE.ppmLoginUrl}
+                        className={styles.mobileLink}
+                        onClick={() => setMobileOpen(false)}
+                    >
+                        Sign in
+                    </a>
                     <a href={SITE.ppmSignupUrl} className="btn btn-primary" style={{ width: "100%" }}>
                         Get Started
                     </a>

@@ -7,9 +7,9 @@ export const SITE = {
     tagline: "From Everyday Life to Enterprise Strategy. Track It All.",
     domain: "cellgenius-ai.com",
     url: "https://cellgenius-ai.com",
-    // ⚠️  Update these URLs once the PPM app is deployed to Vercel
-    ppmSignupUrl: "https://ppm-app-three.vercel.app/signup",
-    ppmLoginUrl: "https://ppm-app-three.vercel.app/login",
+    appUrl: "https://app.cellgenius-ai.com",
+    ppmSignupUrl: "https://app.cellgenius-ai.com/signup",
+    ppmLoginUrl: "https://app.cellgenius-ai.com/login",
     email: "info@cellgenius-ai.com",
     copyright: `© ${new Date().getFullYear()} CellGenius. All rights reserved.`,
 };
