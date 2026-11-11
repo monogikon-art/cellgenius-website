@@ -54,7 +54,7 @@ export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
                             type="button"
                             onClick={() => dialogRef.current?.close()}
                             aria-label="Close video"
-                            className="grid size-10 place-items-center rounded-full border border-white/15 hover:border-gold hover:text-gold"
+                            className="grid size-10 place-items-center rounded-full border border-white/15 hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                         >
                             <X aria-hidden="true" className="size-5" />
                         </button>
@@ -68,7 +68,11 @@ export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
                         autoPlay
                         playsInline
                         preload="metadata"
-                        onEnded={() => next !== null && onIndex(next)}
+                        onEnded={() => {
+                            if (next === null) return;
+                            focusVideo.current = true;
+                            onIndex(next);
+                        }}
                         className="aspect-video w-full rounded-xl bg-black"
                     />
                     {next !== null ? (
@@ -79,7 +83,7 @@ export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
                                     focusVideo.current = true;
                                     onIndex(next);
                                 }}
-                                className="rounded-full border border-gold/60 px-4 py-2 text-sm font-semibold text-gold hover:bg-gold hover:text-ink-0"
+                                className="rounded-full border border-gold/60 px-4 py-2 text-sm font-semibold text-gold hover:bg-gold hover:text-ink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                             >
                                 Next: {playlist[next].title}
                             </button>

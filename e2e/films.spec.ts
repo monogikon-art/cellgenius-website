@@ -38,3 +38,12 @@ test("a demo chapter offers the next chapter", async ({ page }) => {
     await expect(dialog.getByRole("button", { name: /^Next:/ })).toHaveCount(0);
     await expect(dialog.locator("video")).toBeFocused();
 });
+
+test("a chapter that ends moves on and keeps focus on the new video", async ({ page }) => {
+    await page.goto("/#demos");
+    await page.getByRole("button", { name: /Play 1\.1 The campus/ }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.locator("video").dispatchEvent("ended");
+    await expect(dialog.getByRole("heading", { name: "1.2 Strategy & OKR" })).toBeVisible();
+    await expect(dialog.locator("video")).toBeFocused();
+});

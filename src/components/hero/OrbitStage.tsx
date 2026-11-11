@@ -13,7 +13,7 @@ type OrbitStageProps = { launched: number; running: boolean; labels: readonly st
 export function OrbitStage({ launched, running, labels, still = false }: OrbitStageProps) {
     const planets = useRef<(SVGGElement | null)[]>([]);
     const angles = useRef([...(still ? STILL_START : MOTION_START)]);
-    const gradient = `planet-${useId().replace(/[^w-]/g, "")}`;
+    const gradient = `planet-${useId().replace(/[^\w-]/g, "")}`;
 
     useEffect(() => {
         const place = () =>

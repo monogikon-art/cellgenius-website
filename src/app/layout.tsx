@@ -10,10 +10,19 @@ export const metadata: Metadata = {
     title: "Changenius — every change, governed in one place",
     description:
         "Changenius is one system where an organisation plans, approves, runs and checks the results of all its projects — with AI that does the paperwork while people keep every decision.",
-    openGraph: { title: "Changenius", description: "Every change in your organisation, governed in one place.", type: "website" },
+    alternates: { canonical: "/" },
+    openGraph: {
+        title: "Changenius",
+        description: "Every change in your organisation, governed in one place.",
+        type: "website",
+        url: "/",
+        siteName: "Changenius",
+    },
+    twitter: { card: "summary" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    // Reading headers renders every page per request, which is what lets the middleware's CSP nonce reach Next's own scripts.
     await headers();
     return (
         <html lang="en" className={inter.variable}>

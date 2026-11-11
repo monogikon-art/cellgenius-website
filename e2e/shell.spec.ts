@@ -23,3 +23,17 @@ test("phone menu opens, lists the sections and closes on selection", async ({ pa
     await expect(menu).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Open menu" })).toHaveAttribute("aria-expanded", "false");
 });
+
+test("metadata names one canonical page for sharing", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://cellgenius-ai.com");
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://cellgenius-ai.com");
+    await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute("content", "Changenius");
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary");
+});
+
+test("the retired pricing page redirects home permanently", async ({ request }) => {
+    const res = await request.get("/pricing", { maxRedirects: 0 });
+    expect(res.status()).toBe(308);
+    expect(res.headers().location).toBe("/");
+});

@@ -10,21 +10,19 @@ import { SignInPanel } from "@/components/SignInPanel";
 
 export default async function Home() {
     const nonce = (await headers()).get("x-nonce") ?? undefined;
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+    const assistantOn = process.env.NEXT_PUBLIC_ASSISTANT_ENABLED === "true" && siteKey !== "";
     return (
         <FilmPlayerProvider>
-            <Header />
+            <Header assistantOn={assistantOn} />
             <main id="main" className="pt-16">
-                <HeroCinematic />
-                <AssistantSection
-                    nonce={nonce}
-                    enabled={process.env.NEXT_PUBLIC_ASSISTANT_ENABLED === "true"}
-                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
-                />
+                <HeroCinematic assistantOn={assistantOn} />
+                <AssistantSection nonce={nonce} enabled={assistantOn} siteKey={siteKey} />
                 <CommercialsSection />
                 <SignInPanel />
                 <DemosSection />
             </main>
-            <Footer />
+            <Footer assistantOn={assistantOn} />
         </FilmPlayerProvider>
     );
 }

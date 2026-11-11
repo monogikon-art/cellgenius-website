@@ -14,7 +14,7 @@ const LABELS = BURST.map((b) => b.word);
 const STILL_PHASE: Phase = { kind: "intro" };
 const STILL_STEP_MS = 6000;
 
-export function HeroCinematic() {
+export function HeroCinematic({ assistantOn }: { assistantOn: boolean }) {
     const ref = useRef<HTMLElement>(null);
     const reduced = usePrefersReducedMotion();
     const inView = useInView(ref);
@@ -28,7 +28,7 @@ export function HeroCinematic() {
                 Changenius — every change in your organisation, governed in one place
             </h1>
             <Backdrop reduced={reduced} running={running} />
-            {reduced ? <HeroStill paused={paused} /> : <HeroMotion running={running} />}
+            {reduced ? <HeroStill paused={paused} assistantOn={assistantOn} /> : <HeroMotion running={running} assistantOn={assistantOn} />}
             <button
                 type="button"
                 onClick={() => setPaused((p) => !p)}
@@ -41,21 +41,22 @@ export function HeroCinematic() {
     );
 }
 
-function HeroLayout({ statement, stage }: { statement: string; stage: React.ReactNode }) {
+function HeroLayout({ statement, stage, assistantOn }: { statement: string; stage: React.ReactNode; assistantOn: boolean }) {
     return (
         <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-4 pb-20 pt-12 sm:px-6">
             <StatementRotator text={statement} />
             <div className="relative grid w-full flex-1 place-items-center py-10">{stage}</div>
-            <HeroActions />
+            <HeroActions assistantOn={assistantOn} />
         </div>
     );
 }
 
-function HeroMotion({ running }: { running: boolean }) {
+function HeroMotion({ running, assistantOn }: { running: boolean; assistantOn: boolean }) {
     const steps = useMemo(() => buildCycle(BURST.length), []);
     const step = useCycle(steps, running);
     return (
         <HeroLayout
+            assistantOn={assistantOn}
             statement={statementFor(step.phase)}
             stage={
                 <>
@@ -67,7 +68,7 @@ function HeroMotion({ running }: { running: boolean }) {
     );
 }
 
-function HeroStill({ paused }: { paused: boolean }) {
+function HeroStill({ paused, assistantOn }: { paused: boolean; assistantOn: boolean }) {
     const statements = useMemo(() => [...BURST.map((b) => b.statement), CLOSE.statement], []);
     const [index, setIndex] = useState(0);
     useEffect(() => {
@@ -77,6 +78,7 @@ function HeroStill({ paused }: { paused: boolean }) {
     }, [index, paused, statements.length]);
     return (
         <HeroLayout
+            assistantOn={assistantOn}
             statement={statements[index]}
             stage={
                 <>

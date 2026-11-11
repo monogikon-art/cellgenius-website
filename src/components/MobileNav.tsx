@@ -2,9 +2,9 @@
 
 import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { NAV } from "./nav";
+import type { NavItem } from "./nav";
 
-export function MobileNav() {
+export function MobileNav({ items }: { items: readonly NavItem[] }) {
     const [open, setOpen] = useState(false);
     const button = useRef<HTMLButtonElement>(null);
 
@@ -39,12 +39,12 @@ export function MobileNav() {
                     aria-label="Sections"
                     className="absolute inset-x-0 top-16 flex flex-col border-b border-white/5 bg-ink-1 px-4 py-2"
                 >
-                    {NAV.map((item) => (
+                    {items.map((item) => (
                         <a
                             key={item.href}
                             href={item.href}
                             onClick={() => setOpen(false)}
-                            className="py-3 text-base text-muted transition-colors hover:text-fg"
+                            className="rounded-sm py-3 text-base text-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                         >
                             {item.label}
                         </a>

@@ -1,26 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Changenius app icon: the ring and spark on ink">
-  <!--
-    The home-screen / install icon. MASTER SOURCE — every PNG in public/ and the favicon are
-    rendered from this file by `npm run icons:build` (scripts/build-app-icons.ts). Edit here, re-run.
-
-    The mark: RING AND SPARK, chosen by the owner on 2026-09-05 from docs/brand/logo-round-2/
-    (winner: ring-glass-1). A heavy porcelain ring — a governed cycle — open at the upper right,
-    where the gap holds a four-point champagne-gold spark: the genius moment. The whole mark also
-    reads as a capital C. Redrawn here as exact geometry rather than traced: ring centred at
-    512/512, outer radius 280, inner 180, body from 24° clockwise round to 304°; spark centred on
-    the ring's mid-radius at -30°. The soft "glass" finish of the winning picture is kept — a
-    vertical porcelain gradient, a thin gold rim, a top-edge highlight and a soft drop shadow — and
-    its drawn-in rounded frame is dropped, because the platforms apply their own corner mask.
-
-    Rules this file obeys, because the platforms impose them:
-    - Full-bleed square, OPAQUE, NO rounded corners. iOS and Android apply their own mask; an icon that
-      bakes its own corners shows a dark halo inside the platform's rounding.
-    - The mark sits inside the central 80% (x/y 102..922), Android's "maskable" safe zone, so the same
-      artwork survives a circle, a squircle and a rounded square without clipping.
-    - Palette only: deep ink ground, porcelain white, champagne gold. No letters, no text.
-    The same geometry, flat and in currentColor, is ChaingeIcon (src/components/brand/chainge-logo.tsx)
-    and the browser-tab icon (src/app/icon.svg).
-  -->
+  <!-- Changenius ring and spark on ink: the browser-tab icon. -->
   <defs>
     <radialGradient id="ground" cx="50%" cy="38%" r="78%">
       <stop offset="0"   stop-color="#1b2540"/>

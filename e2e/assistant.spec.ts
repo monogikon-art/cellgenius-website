@@ -12,7 +12,8 @@ test("answers a question, and links only to our own domains", async ({ page }) =
     await expect(log.getByText("one system")).toBeVisible({ timeout: 20_000 });
     await expect(log.getByRole("link", { name: "the app" })).toHaveAttribute("href", "https://app.cellgenius-ai.com/login");
     await expect(log.getByRole("link", { name: "this" })).toHaveCount(0);
-    await expect(page.locator("#assistant-input")).toBeFocused();
+    await expect(log).toBeFocused();
+    await expect(page.locator("#assistant-input")).not.toBeFocused();
 });
 
 test("prepares a demo request and sends it only on confirm", async ({ page }) => {
@@ -25,7 +26,8 @@ test("prepares a demo request and sends it only on confirm", async ({ page }) =>
     await expect(sent).toHaveCount(0);
     await card.getByRole("button", { name: "Confirm and send" }).click();
     await expect(sent).toBeVisible();
-    await expect(page.locator("#assistant-input")).toBeFocused();
+    await expect(sent).toBeFocused();
+    await expect(page.locator("#assistant-input")).not.toBeFocused();
 });
 
 test("Enter while a reply is on its way keeps the draft", async ({ page }) => {
@@ -45,4 +47,14 @@ test("the hero button lands in the assistant input", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Ask the EPMO AI Assistant" }).click();
     await expect(page.locator("#assistant-input")).toBeFocused({ timeout: 3_000 });
+});
+
+test("with the assistant on, the header, hero and footer name it", async ({ page, isMobile }) => {
+    await page.goto("/");
+    if (isMobile) await page.getByRole("button", { name: "Open menu" }).click();
+    const nav = page.getByRole("navigation", { name: "Sections" });
+    await expect(nav.getByRole("link", { name: "Assistant" })).toHaveAttribute("href", "#assistant");
+    await expect(nav.getByRole("link", { name: "Contact" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Ask the EPMO AI Assistant" })).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toContainText("The EPMO AI Assistant is AI.");
 });
