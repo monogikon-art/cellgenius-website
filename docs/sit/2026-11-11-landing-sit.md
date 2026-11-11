@@ -5,6 +5,7 @@
 > **Superseded in part (later on 11 Nov 2026):** the planet hero, the header, the hero buttons and the module
 > commercials described below are gone. See [Hero swap and page restructure](#hero-swap-and-page-restructure-owner-decisions-11-nov-2026)
 > at the end. The screenshots in `2026-11-11-shots/` were all retaken for it.
+> Later still, the rotating statement was removed and the show enlarged and re-captioned: see [Hero enlargement](#hero-enlargement-owner-11-nov-2026).
 
 ## Result in one paragraph
 
@@ -64,6 +65,8 @@ Method: each text element was made transparent, the area under it was screenshot
 Three demo-tile readings at the very top of the screen came out as 1.0 because the fixed header was covering them. That is a flaw in how they were measured, not a contrast problem.
 
 ## Screenshots
+
+> Superseded for the hero shots (`01`, `02`, `03`, `12`, `14`, `15`) by [Hero enlargement](#hero-enlargement-owner-11-nov-2026), which retook them at four sizes; the table below describes the earlier hero.
 
 `docs/sit/2026-11-11-shots/`. Each file name starts with `desktop-` (1440×900) or `phone-` (390×844, Pixel 7). 2.0 MB in all.
 
@@ -157,6 +160,8 @@ Before: desktop medians 2.2–7.7, phone 2.0–4.1. One phone sample had a singl
 
 ## Hero swap and page restructure (owner decisions, 11 Nov 2026)
 
+> **Superseded for the hero by [Hero enlargement](#hero-enlargement-owner-11-nov-2026):** the rotating statement described here is removed, and the show is no longer a byte-identical copy of the app's (larger sizes, new captions). The rest of this section still holds.
+
 Tested at the commit that carries this section. Production builds with the assistant **on** (Turnstile test keys, app stub on 3199, server on 3200) and **off** (server on 3201).
 
 **What changed.**
@@ -195,11 +200,11 @@ Tested at the commit that carries this section. Production builds with the assis
 **What changed.**
 
 1. **Rotating statements removed.** `StatementRotator`, `HERO_STATEMENTS`, their test and e2e assertions, and the `statement-in` / `fade-only` CSS are deleted. The hero keeps the sr-only `h1`, the backdrop video and poster, the pause button (it still pauses the show and the video) and reduced motion.
-2. **The show is about 1.6× larger and centred** in a 896 px column (was 448 px): CHANGENIUS up to 88 px (was 56), the formed words and the name above them up to 64 px (was 38), the constellation's centre name 48 px (was 30), the orbit words 28 px (was 19), the closure 88 px. Every size is a fluid `clamp()` that shrinks with the screen width. Stage heights and positions grow with it: the stage is 640 px tall, 560 px when the window is 760 px tall or less, 480 px at 600 px or less. No `transform` or `zoom` is used (H2). The two fixed pixel nudges in the keyframes (the guest T, 12 px; one orbit piece, 8 px) became `em`, so they grow with the letters.
+2. **The show is about 1.6× larger and centred** in a 896 px column (was 448 px): CHANGENIUS up to 88 px (was 56), the formed words and the name above them up to 64 px (was 38), the constellation's centre name 48 px (was 30), the orbit words 28 px (was 19), the closure 88 px. Every size is a fluid `clamp()` that shrinks with the screen width. Stage heights and positions grow with it: the stage height comes from bands of the large-viewport height (`100lvh`; see Fix 1 below): 640 px from 920 px up, 600 px from 730, 560 px from 680, otherwise 480 px. No `transform` or `zoom` is used (H2). The two fixed pixel nudges in the keyframes (the guest T, 12 px; one orbit piece, 8 px) became `em`, so they grow with the letters.
 3. **Captions are larger and in sentence case**: 19 px on desktop down to 14 px on a phone (orbit captions and the sub-line 17 px down to 12 px), no uppercase, almost no letter-spacing, centred, allowed to wrap (balanced) within a maximum width.
-4. **New owner wording** for the five captions, the three hub-cascade lines and the sub-line ("Governed change · Powered by AI · One chain from strategy to benefit"). The closure stays "The change is in us". The show's accessible name is one new sentence.
+4. **New owner wording** for the five captions, the three hub-cascade lines and the sub-line ("Governed change · Powered by AI · One chain from strategy to benefit"). The closure stays "The change is in us". The show's accessible name covers all five captions and "The change is in us" in two sentences (Fix 1).
 5. **The copy now deliberately differs from the app's login show**; both files carry the new provenance note. The app's own copy is unchanged. The 2× tempo override stays.
-6. **Re-measure rule widened slightly**: a resize re-measures when the width **or the show's own height** changes. The show's height only changes at the 760 / 600 px window-height steps, which a phone's address bar does not cross (media queries use the fixed initial viewport), so the H3 fix still holds; without it, a desktop window dragged across a step would keep stale travel vectors.
+6. **Re-measure rule widened slightly**: a resize re-measures when the width **or the large-viewport height band** changes (Fix 1). A phone's address bar does not change `100lvh`, so the H3 fix still holds; a desktop window dragged into another band re-measures instead of keeping stale travel vectors.
 
 **Checks.**
 
@@ -226,7 +231,19 @@ Tested at the commit that carries this section. Production builds with the assis
 | H7 | At 360 px the closure CHANGE IN US first spanned 20–340 px, close to the 16 px gutter | Cosmetic | **Fixed**: the name's fluid size was reduced from 12vw to 11.5vw |
 | H8 | `next dev` / `next build` rewrote `tsconfig.json` (reformatting and adding a `.next-sit-wa` include) | Tooling | Reverted, not committed |
 
-**Not verified.** Contrast of the new caption sizes was not re-measured from screen pixels (the colours are the ones measured before; larger text only helps). No real phone, Safari or Firefox; the address-bar behaviour of the new height steps rests on the browsers' documented fixed initial viewport, not on a device. No screen-reader pass of the new accessible name.
+**Not verified.** Contrast of the new caption sizes was not re-measured from screen pixels (the colours are the ones measured before; larger text only helps). No real phone, Safari or Firefox; the address-bar behaviour of the height bands rests on `lvh` being defined as the viewport with the toolbar retracted, not on a device. No screen-reader pass of the new accessible name.
+
+### Fix 1 (review, 11 Nov 2026)
+
+| # | Review point | What changed |
+|---|---|---|
+| F1 | The `max-height: 760px / 600px` steps sat where a phone's address bar toggles, so the height-based re-measure could bring back the scroll restart (H3) | The stage height is now chosen in the component from **bands of the large-viewport height**: a hidden probe of `height: 100lvh` is read, the band table (920 → 640, 730 → 600, 680 → 560, else 480 px) picks the height, and it is set inline as `--show-h`. A resize re-measures only when the width or that band changes. `lvh` is the viewport with the toolbar retracted, so showing or hiding the address bar never changes it. The CSS `max-height` queries remain only for the first paint before the component runs. The bands are wide (190 px in the phone and laptop range) so ordinary window changes stay inside one |
+| F2 | e2e for the bands | New, desktop and phone projects, at 390×800: −60 px (to 740) keeps the same show height and the loop keeps running; 700 px crosses into the next band, the show gets shorter and the loop restarts (re-measured). The older test (−60 px from 900 and from the Pixel 7's 839) still passes |
+| F3 | Earlier hero sections read as current | One-line "superseded" pointers added to the report note at the top, the first Screenshots section and the Hero swap section |
+| F4 | Accessible name, and the e2e duplicating it | The name now covers all five captions plus "The change is in us" (two sentences). The captions, sub-line, closing line and name live in `src/components/brand/changenius-show-copy.ts`; the show and `e2e/hero.spec.ts` both import it |
+| F5 | Non-breaking spaces in the sub-line | **Kept, before each "·" only** (the space after is plain): they bind each dot to the phrase before it, so a wrapped line never starts with "·". On 360 and 390 px phones the line breaks after "Powered by AI ·" (`small-phone-16`, `phone-16`) |
+
+**Checks after Fix 1.** Typecheck 0 errors; lint 0 errors (same 2 warnings); Vitest 9 files / 83 tests; `npm run build` passes (`/` 23.6 kB, 126 kB First Load JS; built into an ignored dist folder because another session's dev server was running from this worktree on 3150); `npx playwright test` **52 passed** (dev server on its own dist folder for the same reason). Moving letters still start on their source letter (0.0 px off) at all four sizes. All 32 hero shots retaken from the production build and looked at: the stage is now 600 px at 1440×900 (198–798), 390×844 (158–758) and 360×740 (106–706), 560 px at 1280×720 (116–676); nothing off screen, no overlap; at 360×740 the GENIUS caption ends level with the pause button, about 55 px to its left, without touching it. Next again rewrote `tsconfig.json` during the runs; reverted, not committed.
 
 ## Not tested
 

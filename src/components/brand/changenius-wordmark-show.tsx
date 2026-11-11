@@ -1,8 +1,9 @@
 // Adapted from ppm-app's login wordmark show (origin/master@b3f65f48): larger sizes, sentence-case longer captions, website-only. The app's own copy is unchanged.
-// A resize re-measures (which restarts the loop) only when the width or the show's own height changes, so a phone's address bar showing or hiding does not restart the show.
+// A resize re-measures (which restarts the loop) only when the width or the large-viewport height band changes, so a phone's address bar showing or hiding does not restart the show.
 "use client";
 
 import { useEffect, useRef } from "react";
+import { ACT1_SUBLINE, CAPTIONS, CLOSING_LINE, SHOW_LABEL } from "./changenius-show-copy";
 import styles from "./changenius-wordmark-show.module.css";
 
 /**
@@ -31,9 +32,6 @@ import styles from "./changenius-wordmark-show.module.css";
  * measurement. Honours prefers-reduced-motion (static resolved wordmark).
  */
 
-const SHOW_LABEL =
-    "Changenius — every change governed end to end, with AI grounded in your own policies, AI agents that prepare the work for your people to decide, and one chain from strategy to benefit.";
-
 const LETTERS = ["C", "H", "A", "N", "G", "E", "N", "I", "U", "S"];
 
 type Piece = [string, number | null, string];
@@ -47,21 +45,30 @@ const W_AGENTIC: Piece[] = [["A", 2, "f"], ["G", 4, "f"], ["E", 5, "f"], ["N", 6
 const W_CHAIN: Piece[] = [["C", 0, "w"], ["H", 1, "w"], ["A", 2, "a"], ["I", 7, "w"], ["N", 3, "w"]];
 const W_GENIUS: Piece[] = [["G", 4, "w"], ["E", 5, "w"], ["N", 6, "w"], ["I", 7, "g"], ["U", 8, "g"], ["S", 9, "g"]];
 
-const CAPTION_CHANGE = "Every change in your organisation, governed end to end";
-const CAPTION_AI = "Powered by artificial intelligence, grounded in your own policies";
-const CAPTION_GENIUS = "Built-in Genius automation keeps every step moving";
-
 const WORDS: { pieces: Piece[]; script: string }[] = [
-    { pieces: W_CHANGE, script: CAPTION_CHANGE },
-    { pieces: W_AI, script: CAPTION_AI },
-    { pieces: W_AGENTIC, script: "150 AI agents prepare the work, your people decide" },
-    { pieces: W_CHAIN, script: "One chain covering strategy, planning, delivery and benefits realisation" },
-    { pieces: W_GENIUS, script: CAPTION_GENIUS },
+    { pieces: W_CHANGE, script: CAPTIONS.change },
+    { pieces: W_AI, script: CAPTIONS.ai },
+    { pieces: W_AGENTIC, script: CAPTIONS.agentic },
+    { pieces: W_CHAIN, script: CAPTIONS.chain },
+    { pieces: W_GENIUS, script: CAPTIONS.genius },
 ];
 
 const ORB_POS: [string, string][] = [["24%", "10%"], ["76%", "10%"], ["77%", "64%"], ["23%", "64%"], ["50%", "91%"]];
 
-const ACT1_STORIES = [CAPTION_CHANGE, CAPTION_AI, CAPTION_GENIUS];
+const ACT1_STORIES = [CAPTIONS.change, CAPTIONS.ai, CAPTIONS.genius];
+
+// [minimum large-viewport height, show height] in px. Sized from 100lvh, which a phone's
+// toolbar never changes; each band leaves room for the icon and padding above the show.
+const HEIGHT_BANDS: [number, number][] = [[920, 640], [730, 600], [680, 560], [0, 480]];
+
+function bandHeight(): number {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;left:0;width:0;height:100lvh;visibility:hidden;pointer-events:none";
+    document.body.appendChild(probe);
+    const lvh = probe.getBoundingClientRect().height || window.innerHeight;
+    probe.remove();
+    return HEIGHT_BANDS.find(([min]) => lvh >= min)![1];
+}
 
 function pieceClass(prefix: string, beat: number, kind: string): string {
     return styles[`${prefix}${beat}${kind}` as keyof typeof styles] as string;
@@ -137,15 +144,18 @@ export function ChangeniusWordmarkShow() {
         const root = rootRef.current;
         if (!root) return;
         let timer: ReturnType<typeof setTimeout> | undefined;
+        let band = bandHeight();
+        root.style.setProperty("--show-h", `${band}px`);
         const run = () => measure(root);
         document.fonts?.ready.then(run).catch(() => run());
         run();
         let lastWidth = window.innerWidth;
-        let lastHeight = root.offsetHeight;
         const onResize = () => {
-            if (window.innerWidth === lastWidth && root.offsetHeight === lastHeight) return;
+            const next = bandHeight();
+            if (window.innerWidth === lastWidth && next === band) return;
             lastWidth = window.innerWidth;
-            lastHeight = root.offsetHeight;
+            band = next;
+            root.style.setProperty("--show-h", `${band}px`);
             clearTimeout(timer);
             timer = setTimeout(run, 200);
         };
@@ -188,7 +198,7 @@ export function ChangeniusWordmarkShow() {
                         <span key={b} className={styles[`c1s${b}` as keyof typeof styles] as string}>{t}</span>
                     ))}
                     <span className={`${styles.c1hub} ${styles.sSub}`}>
-                        Governed change&nbsp;· Powered by AI&nbsp;· One chain from strategy to benefit
+                        {ACT1_SUBLINE}
                     </span>
                 </div>
             </div>
@@ -247,7 +257,7 @@ export function ChangeniusWordmarkShow() {
                     <span className={`${styles.v4w} ${styles.c4gw}`}>U</span>
                     <span className={`${styles.v4w} ${styles.c4gw}`}>S</span>
                 </div>
-                <div className={`${styles.v4Script} ${styles.c4scr}`}>The change is in us</div>
+                <div className={`${styles.v4Script} ${styles.c4scr}`}>{CLOSING_LINE}</div>
             </div>
         </div>
     );

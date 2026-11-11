@@ -1,15 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
+import { ACT1_SUBLINE, CAPTIONS as CAPTION_TEXT, CLOSING_LINE, SHOW_LABEL as SHOW_NAME } from "../src/components/brand/changenius-show-copy";
 
-const SHOW_NAME =
-    "Changenius — every change governed end to end, with AI grounded in your own policies, AI agents that prepare the work for your people to decide, and one chain from strategy to benefit.";
-
-const CAPTIONS = [
-    "Every change in your organisation, governed end to end",
-    "Powered by artificial intelligence, grounded in your own policies",
-    "150 AI agents prepare the work, your people decide",
-    "One chain covering strategy, planning, delivery and benefits realisation",
-    "Built-in Genius automation keeps every step moving",
-];
+const CAPTIONS = Object.values(CAPTION_TEXT);
 
 const LOOP_MS = 147_200;
 
@@ -63,8 +55,8 @@ test("the hero is the enlarged wordmark show alone, at twice the tempo, with no 
 test("the captions carry the owner's wording, in larger sentence case that may wrap", async ({ page }) => {
     await page.goto("/");
     for (const caption of CAPTIONS) await expect(show(page).getByText(caption, { exact: true }).first()).toBeAttached();
-    await expect(show(page).getByText("Governed change · Powered by AI · One chain from strategy to benefit", { exact: true })).toBeAttached();
-    await expect(show(page).getByText("The change is in us", { exact: true })).toBeAttached();
+    await expect(show(page).getByText(ACT1_SUBLINE, { exact: true })).toBeAttached();
+    await expect(show(page).getByText(CLOSING_LINE, { exact: true })).toBeAttached();
     await expect(show(page).getByText(/Enterprise Change Management|All components linked/)).toHaveCount(0);
 
     await holdShowAt(page, 13.8 / 147.2);
@@ -93,6 +85,36 @@ test("a height-only resize (a phone's address bar) leaves the show running; a wi
     await page.setViewportSize({ width: size.width - 40, height: size.height - 60 });
     await page.waitForTimeout(600);
     expect(await showTime()).toBeLessThan(before);
+});
+
+test.describe("large-viewport height bands", () => {
+    test.use({ viewport: { width: 390, height: 800 } });
+
+    const showTime = (page: Page) =>
+        page.evaluate(() => Number(document.querySelector("[data-chainge-show]")!.getAnimations({ subtree: true })[0].currentTime));
+    const showHeight = (page: Page) => show(page).evaluate((el) => (el as HTMLElement).offsetHeight);
+
+    test("a small height change within a band keeps the show running at the same height", async ({ page }) => {
+        await page.goto("/");
+        await page.waitForTimeout(2_500);
+        const height = await showHeight(page);
+        const before = await showTime(page);
+        await page.setViewportSize({ width: 390, height: 740 });
+        await page.waitForTimeout(600);
+        expect(await showHeight(page)).toBe(height);
+        expect(await showTime(page)).toBeGreaterThan(before);
+    });
+
+    test("crossing into another band resizes the show and re-measures it", async ({ page }) => {
+        await page.goto("/");
+        await page.waitForTimeout(2_500);
+        const height = await showHeight(page);
+        const before = await showTime(page);
+        await page.setViewportSize({ width: 390, height: 700 });
+        await page.waitForTimeout(600);
+        expect(await showHeight(page)).toBeLessThan(height);
+        expect(await showTime(page)).toBeLessThan(before);
+    });
 });
 
 test("pause stops the wordmark show and the backdrop video, and play resumes them", async ({ page }) => {
