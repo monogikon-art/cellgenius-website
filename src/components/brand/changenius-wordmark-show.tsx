@@ -1,12 +1,12 @@
-// Copied from ppm-app origin/master@b3f65f48 on 2026-11-11.
-// One deliberate change from the app's copy: a resize re-measures (which restarts the loop) only when the width changes, so a phone's address bar showing or hiding does not restart the show.
+// Adapted from ppm-app's login wordmark show (origin/master@b3f65f48): larger sizes, sentence-case longer captions, website-only. The app's own copy is unchanged.
+// A resize re-measures (which restarts the loop) only when the width or the show's own height changes, so a phone's address bar showing or hiding does not restart the show.
 "use client";
 
 import { useEffect, useRef } from "react";
 import styles from "./changenius-wordmark-show.module.css";
 
 /**
- * The CHANGENIUS wordmark show — the login-page brand animation.
+ * The CHANGENIUS wordmark show — the website hero's brand animation.
  *
  * One 294.4s master loop. CHANGENIUS is the centralized state that
  * produces every word. The resting AI pair — the A and the I — wears the
@@ -24,12 +24,15 @@ import styles from "./changenius-wordmark-show.module.css";
  *     closure (280.4–294.4s): the name resolves into its own anagram,
  *     CHANGE IN US, with the closing line beneath.
  *
- * The CSS module is GENERATED (percent-keyframe choreography) — regenerate,
- * don't hand-edit. Travel vectors depend on layout, so this component
+ * The CSS module's keyframes are generated choreography; its layout rules
+ * set the sizes. Travel vectors depend on layout, so this component
  * measures them at runtime into --dx/--dy/--sc (and the closure's N↔I swap
  * distance into --dsw), suspending animations for one frame during
  * measurement. Honours prefers-reduced-motion (static resolved wordmark).
  */
+
+const SHOW_LABEL =
+    "Changenius — every change governed end to end, with AI grounded in your own policies, AI agents that prepare the work for your people to decide, and one chain from strategy to benefit.";
 
 const LETTERS = ["C", "H", "A", "N", "G", "E", "N", "I", "U", "S"];
 
@@ -44,21 +47,21 @@ const W_AGENTIC: Piece[] = [["A", 2, "f"], ["G", 4, "f"], ["E", 5, "f"], ["N", 6
 const W_CHAIN: Piece[] = [["C", 0, "w"], ["H", 1, "w"], ["A", 2, "a"], ["I", 7, "w"], ["N", 3, "w"]];
 const W_GENIUS: Piece[] = [["G", 4, "w"], ["E", 5, "w"], ["N", 6, "w"], ["I", 7, "g"], ["U", 8, "g"], ["S", 9, "g"]];
 
+const CAPTION_CHANGE = "Every change in your organisation, governed end to end";
+const CAPTION_AI = "Powered by artificial intelligence, grounded in your own policies";
+const CAPTION_GENIUS = "Built-in Genius automation keeps every step moving";
+
 const WORDS: { pieces: Piece[]; script: string }[] = [
-    { pieces: W_CHANGE, script: "Enterprise Change Management" },
-    { pieces: W_AI, script: "Powered by Artificial Intelligence" },
-    { pieces: W_AGENTIC, script: "Agents that plan, decide and act" },
-    { pieces: W_CHAIN, script: "All components, linked" },
-    { pieces: W_GENIUS, script: "Genius built in automation" },
+    { pieces: W_CHANGE, script: CAPTION_CHANGE },
+    { pieces: W_AI, script: CAPTION_AI },
+    { pieces: W_AGENTIC, script: "150 AI agents prepare the work, your people decide" },
+    { pieces: W_CHAIN, script: "One chain covering strategy, planning, delivery and benefits realisation" },
+    { pieces: W_GENIUS, script: CAPTION_GENIUS },
 ];
 
 const ORB_POS: [string, string][] = [["24%", "10%"], ["76%", "10%"], ["77%", "64%"], ["23%", "64%"], ["50%", "91%"]];
 
-const ACT1_STORIES = [
-    "Enterprise Change Management",
-    "Powered by Artificial Intelligence",
-    "Genius built in automation",
-];
+const ACT1_STORIES = [CAPTION_CHANGE, CAPTION_AI, CAPTION_GENIUS];
 
 function pieceClass(prefix: string, beat: number, kind: string): string {
     return styles[`${prefix}${beat}${kind}` as keyof typeof styles] as string;
@@ -138,9 +141,11 @@ export function ChangeniusWordmarkShow() {
         document.fonts?.ready.then(run).catch(() => run());
         run();
         let lastWidth = window.innerWidth;
+        let lastHeight = root.offsetHeight;
         const onResize = () => {
-            if (window.innerWidth === lastWidth) return;
+            if (window.innerWidth === lastWidth && root.offsetHeight === lastHeight) return;
             lastWidth = window.innerWidth;
+            lastHeight = root.offsetHeight;
             clearTimeout(timer);
             timer = setTimeout(run, 200);
         };
@@ -164,7 +169,7 @@ export function ChangeniusWordmarkShow() {
             data-chainge-show
             className={styles.show}
             role="img"
-            aria-label="Changenius — Enterprise Change Management, powered by AI, all components linked. The change is in us."
+            aria-label={SHOW_LABEL}
         >
             {/* Act 1 — hub cascade */}
             <div className={`${styles.ph} ${styles.ph0}`} aria-hidden="true">
@@ -183,7 +188,7 @@ export function ChangeniusWordmarkShow() {
                         <span key={b} className={styles[`c1s${b}` as keyof typeof styles] as string}>{t}</span>
                     ))}
                     <span className={`${styles.c1hub} ${styles.sSub}`}>
-                        Enterprise Change Management&nbsp;·&nbsp;Powered by AI&nbsp;·&nbsp;All components linked
+                        Governed change&nbsp;· Powered by AI&nbsp;· One chain from strategy to benefit
                     </span>
                 </div>
             </div>

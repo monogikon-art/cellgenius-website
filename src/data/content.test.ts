@@ -1,14 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEMO_GROUPS, FEATURED_FILM, HERO_STATEMENTS, NAME } from "./content";
+import { DEMO_GROUPS, FEATURED_FILM, NAME } from "./content";
 
 const allFilms = [FEATURED_FILM, ...DEMO_GROUPS.flatMap((g) => g.chapters)];
 
 describe("content", () => {
-    it("opens the hero on the name and closes on the change in us", () => {
+    it("names the product CHANGENIUS", () => {
         expect(NAME).toBe("CHANGENIUS");
-        expect(HERO_STATEMENTS).toHaveLength(7);
-        expect(HERO_STATEMENTS[0]).toBe("Meet Changenius.");
-        expect(HERO_STATEMENTS.at(-1)).toBe("The change is in us.");
     });
 
     it("keeps every video on the site's own media route, with no module commercials", () => {
@@ -24,7 +21,7 @@ describe("content", () => {
     });
 
     it("never names the bank client", () => {
-        const text = JSON.stringify({ HERO_STATEMENTS, allFilms, DEMO_GROUPS });
+        const text = JSON.stringify({ allFilms, DEMO_GROUPS });
         expect(text).not.toMatch(/\bNBB\b|National Bank of Bahrain/i);
     });
 });

@@ -5,7 +5,6 @@ import { Pause, Play } from "lucide-react";
 import { ChaingeIcon } from "../brand/changenius-icon";
 import { ChangeniusWordmarkShow } from "../brand/changenius-wordmark-show";
 import { useInView, usePageVisible, usePrefersReducedMotion } from "./hooks";
-import { StatementRotator } from "./StatementRotator";
 
 export function HeroCinematic() {
     const ref = useRef<HTMLElement>(null);
@@ -26,14 +25,11 @@ export function HeroCinematic() {
                 Changenius — every change in your organisation, governed in one place
             </h1>
             <Backdrop reduced={reduced} running={running} />
-            <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-4 pb-4 pt-6 sm:px-6">
-                <StatementRotator running={running} />
-                <div className="grid w-full flex-1 place-items-center">
-                    <div className="w-full max-w-md">
-                        <ChaingeIcon className="mx-auto mb-5 h-16 w-16 text-white" />
-                        <div className="text-center">
-                            <ChangeniusWordmarkShow />
-                        </div>
+            <div className="relative z-10 mx-auto grid w-full max-w-6xl flex-1 place-items-center px-4 py-6 sm:px-6">
+                <div className="w-full max-w-4xl">
+                    <ChaingeIcon className="mx-auto mb-4 size-14 text-white sm:[@media(min-height:840px)]:size-20" />
+                    <div className="text-center">
+                        <ChangeniusWordmarkShow />
                     </div>
                 </div>
             </div>

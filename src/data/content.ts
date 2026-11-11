@@ -8,16 +8,6 @@ export const SITE = {
 
 export const NAME = "CHANGENIUS";
 
-export const HERO_STATEMENTS: readonly string[] = [
-    "Meet Changenius.",
-    "Every change in your organisation, governed in one place.",
-    "AI, grounded in your own policies.",
-    "Agentic AI prepares the work. People decide.",
-    "One chain, from strategy to benefit.",
-    "Built-in genius: native, embedded automation across every step. Late work escalates on its own.",
-    "The change is in us.",
-];
-
 export type Film = { readonly title: string; readonly src: string; readonly poster?: string; readonly seconds?: number };
 
 export type DemoGroup = { readonly id: string; readonly title: string; readonly lead: string; readonly chapters: readonly Film[] };

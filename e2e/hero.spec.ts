@@ -1,6 +1,17 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const SHOW_NAME = "Changenius — Enterprise Change Management, powered by AI, all components linked. The change is in us.";
+const SHOW_NAME =
+    "Changenius — every change governed end to end, with AI grounded in your own policies, AI agents that prepare the work for your people to decide, and one chain from strategy to benefit.";
+
+const CAPTIONS = [
+    "Every change in your organisation, governed end to end",
+    "Powered by artificial intelligence, grounded in your own policies",
+    "150 AI agents prepare the work, your people decide",
+    "One chain covering strategy, planning, delivery and benefits realisation",
+    "Built-in Genius automation keeps every step moving",
+];
+
+const LOOP_MS = 147_200;
 
 test.beforeEach(async ({ page }) => {
     await page.route((url) => url.pathname.startsWith("/media/"), (route) => route.fulfill({ status: 204 }));
@@ -10,11 +21,27 @@ function hero(page: Page) {
     return page.locator("section.hero-show");
 }
 
+function show(page: Page) {
+    return page.locator("[data-chainge-show]");
+}
+
 function showStyle(page: Page, property: "animationDuration" | "animationPlayState" | "animationName") {
     return page.locator("[data-chainge-show] span").first().evaluate((el, p) => getComputedStyle(el)[p], property);
 }
 
-test("the hero rotates its statements over the login wordmark show, at twice the tempo, with no console errors", async ({ page }) => {
+function holdShowAt(page: Page, fraction: number) {
+    return page.evaluate(
+        ([f, loop]) => {
+            for (const a of document.querySelector("[data-chainge-show]")!.getAnimations({ subtree: true })) {
+                a.pause();
+                a.currentTime = f * loop;
+            }
+        },
+        [fraction, LOOP_MS] as const,
+    );
+}
+
+test("the hero is the enlarged wordmark show alone, at twice the tempo, with no console errors", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (m) => {
         if (m.type() === "error") errors.push(m.text());
@@ -25,13 +52,32 @@ test("the hero rotates its statements over the login wordmark show, at twice the
     await expect(hero(page).locator('svg[aria-hidden="true"][viewBox="0 0 64 64"]')).toBeVisible();
     await expect(hero(page).getByRole("img")).toHaveCount(1);
     await expect.poll(() => showStyle(page, "animationDuration")).toBe("147.2s");
-    await expect(page.getByText("Meet Changenius.", { exact: true })).toBeVisible();
-    await expect(page.getByText("Every change in your organisation, governed in one place.", { exact: true })).toBeVisible({ timeout: 8_000 });
-    await expect(page.getByText("AI, grounded in your own policies.", { exact: true })).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText("Meet Changenius.")).toHaveCount(0);
+    await expect(hero(page).locator("p")).toHaveCount(0);
     await expect(hero(page).getByRole("button")).toHaveCount(1);
     await expect(hero(page).getByRole("button", { name: "Pause animation" })).toBeVisible();
     await expect(hero(page).getByRole("link")).toHaveCount(0);
     expect(errors.filter((e) => !/Failed to load resource|challenges\.cloudflare/.test(e))).toEqual([]);
+});
+
+test("the captions carry the owner's wording, in larger sentence case that may wrap", async ({ page }) => {
+    await page.goto("/");
+    for (const caption of CAPTIONS) await expect(show(page).getByText(caption, { exact: true }).first()).toBeAttached();
+    await expect(show(page).getByText("Governed change · Powered by AI · One chain from strategy to benefit", { exact: true })).toBeAttached();
+    await expect(show(page).getByText("The change is in us", { exact: true })).toBeAttached();
+    await expect(show(page).getByText(/Enterprise Change Management|All components linked/)).toHaveCount(0);
+
+    await holdShowAt(page, 13.8 / 147.2);
+    const agentic = show(page).getByText(CAPTIONS[2], { exact: true }).first();
+    await expect(agentic).toBeVisible();
+    const style = await agentic.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { transform: s.textTransform, wrap: s.whiteSpace, size: parseFloat(s.fontSize), opacity: Number(s.opacity) };
+    });
+    expect(style.transform).toBe("none");
+    expect(style.wrap).not.toBe("nowrap");
+    expect(style.opacity).toBeGreaterThan(0.9);
+    expect(style.size).toBeGreaterThanOrEqual(page.viewportSize()!.width >= 768 ? 17 : 14);
 });
 
 test("a height-only resize (a phone's address bar) leaves the show running; a width change re-measures it", async ({ page }) => {
@@ -49,33 +95,58 @@ test("a height-only resize (a phone's address bar) leaves the show running; a wi
     expect(await showTime()).toBeLessThan(before);
 });
 
-test("pause stops the wordmark show and the statement, and play resumes them", async ({ page }) => {
+test("pause stops the wordmark show and the backdrop video, and play resumes them", async ({ page }) => {
     await page.goto("/");
+    const videoPaused = () => page.locator("video[data-hero-backdrop]").evaluate((v: HTMLVideoElement) => v.paused);
     await expect.poll(() => showStyle(page, "animationPlayState")).toBe("running");
     await page.getByRole("button", { name: "Pause animation" }).click();
     await expect.poll(() => showStyle(page, "animationPlayState")).toBe("paused");
-    const first = page.getByText("Meet Changenius.", { exact: true });
-    await expect(first).toBeVisible();
-    await page.waitForTimeout(7_000);
-    await expect(first).toBeVisible();
+    await expect.poll(videoPaused).toBe(true);
     await page.getByRole("button", { name: "Play animation" }).click();
     await expect.poll(() => showStyle(page, "animationPlayState")).toBe("running");
-    await expect(page.getByText("Every change in your organisation, governed in one place.", { exact: true })).toBeVisible({ timeout: 8_000 });
+    await expect.poll(videoPaused).toBe(false);
 });
+
+for (const width of [390, 360]) {
+    test(`nothing in the show runs off a ${width} px screen in any act`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 740 });
+        await page.goto("/");
+        await page.waitForTimeout(500);
+        for (const seconds of [4, 13.8, 18.8, 53.6, 56, 138, 144.6]) {
+            await holdShowAt(page, seconds / 147.2);
+            const overflow = await page.evaluate(() => {
+                const root = document.querySelector("[data-chainge-show]")!;
+                const shown = (el: Element) => {
+                    let o = 1;
+                    for (let n: Element | null = el; n && n !== root.parentElement; n = n.parentElement) o *= Number(getComputedStyle(n).opacity);
+                    return o > 0.3;
+                };
+                const off = [...root.querySelectorAll("span, div")]
+                    .filter((el) => el.children.length === 0 && el.textContent!.trim() && shown(el))
+                    .filter((el) => {
+                        const r = el.getBoundingClientRect();
+                        return r.left < 0 || r.right > window.innerWidth;
+                    })
+                    .map((el) => el.textContent);
+                return { scroll: document.documentElement.scrollWidth, inner: window.innerWidth, off };
+            });
+            expect(overflow.scroll, `scrollWidth at ${seconds}s`).toBeLessThanOrEqual(overflow.inner);
+            expect(overflow.off, `text off screen at ${seconds}s`).toEqual([]);
+        }
+    });
+}
 
 test.describe("reduced motion", () => {
     test.use({ reducedMotion: "reduce" });
 
-    test("shows the still wordmark with no backdrop video, and pause holds the statement", async ({ page }) => {
+    test("shows the still wordmark with no backdrop video, and the pause button still toggles", async ({ page }) => {
         await page.goto("/");
         await expect(hero(page).getByRole("img", { name: SHOW_NAME })).toBeVisible();
         await expect.poll(() => showStyle(page, "animationName")).toBe("none");
         await expect(page.locator("video[data-hero-backdrop]")).toHaveCount(0);
         await page.getByRole("button", { name: "Pause animation" }).click();
-        const first = page.getByText("Meet Changenius.", { exact: true });
-        await expect(first).toBeVisible();
-        await page.waitForTimeout(7_000);
-        await expect(first).toBeVisible();
+        await expect(page.getByRole("button", { name: "Play animation" })).toBeVisible();
+        await expect(page.getByText("Meet Changenius.")).toHaveCount(0);
     });
 });
 
