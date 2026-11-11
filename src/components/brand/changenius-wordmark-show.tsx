@@ -1,4 +1,5 @@
 // Copied from ppm-app origin/master@b3f65f48 on 2026-11-11.
+// One deliberate change from the app's copy: a resize re-measures (which restarts the loop) only when the width changes, so a phone's address bar showing or hiding does not restart the show.
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -136,7 +137,10 @@ export function ChangeniusWordmarkShow() {
         const run = () => measure(root);
         document.fonts?.ready.then(run).catch(() => run());
         run();
+        let lastWidth = window.innerWidth;
         const onResize = () => {
+            if (window.innerWidth === lastWidth) return;
+            lastWidth = window.innerWidth;
             clearTimeout(timer);
             timer = setTimeout(run, 200);
         };

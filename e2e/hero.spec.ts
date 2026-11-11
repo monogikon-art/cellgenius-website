@@ -22,7 +22,8 @@ test("the hero rotates its statements over the login wordmark show, at twice the
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Changenius/);
     await expect(hero(page).getByRole("img", { name: SHOW_NAME })).toBeVisible();
-    await expect(hero(page).getByRole("img", { name: "Changenius", exact: true })).toBeVisible();
+    await expect(hero(page).locator('svg[aria-hidden="true"][viewBox="0 0 64 64"]')).toBeVisible();
+    await expect(hero(page).getByRole("img")).toHaveCount(1);
     await expect.poll(() => showStyle(page, "animationDuration")).toBe("147.2s");
     await expect(page.getByText("Meet Changenius.", { exact: true })).toBeVisible();
     await expect(page.getByText("Every change in your organisation, governed in one place.", { exact: true })).toBeVisible({ timeout: 8_000 });
@@ -31,6 +32,21 @@ test("the hero rotates its statements over the login wordmark show, at twice the
     await expect(hero(page).getByRole("button", { name: "Pause animation" })).toBeVisible();
     await expect(hero(page).getByRole("link")).toHaveCount(0);
     expect(errors.filter((e) => !/Failed to load resource|challenges\.cloudflare/.test(e))).toEqual([]);
+});
+
+test("a height-only resize (a phone's address bar) leaves the show running; a width change re-measures it", async ({ page }) => {
+    await page.goto("/");
+    const showTime = () =>
+        page.evaluate(() => Number(document.querySelector("[data-chainge-show]")!.getAnimations({ subtree: true })[0].currentTime));
+    await page.waitForTimeout(2_500);
+    const size = page.viewportSize()!;
+    const before = await showTime();
+    await page.setViewportSize({ width: size.width, height: size.height - 60 });
+    await page.waitForTimeout(600);
+    expect(await showTime()).toBeGreaterThan(before);
+    await page.setViewportSize({ width: size.width - 40, height: size.height - 60 });
+    await page.waitForTimeout(600);
+    expect(await showTime()).toBeLessThan(before);
 });
 
 test("pause stops the wordmark show and the statement, and play resumes them", async ({ page }) => {
