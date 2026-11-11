@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { MAX_MESSAGE } from "./limits";
 
-export const MAX_MESSAGE = 1000;
+export { MAX_MESSAGE };
 
 export const ClientRequestSchema = z.discriminatedUnion("action", [
     z.strictObject({ action: z.literal("start"), turnstileToken: z.string().min(1).max(2048) }),

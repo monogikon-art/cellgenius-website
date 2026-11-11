@@ -40,11 +40,11 @@ export function RequestCard({ proposal, busy, onConfirm, onEdit }: { proposal: P
                     type="button"
                     disabled={busy}
                     onClick={onConfirm}
-                    className="rounded-full bg-gold px-5 py-2 font-semibold text-ink-0 hover:bg-gold-hi disabled:opacity-50"
+                    className="rounded-full bg-gold px-5 py-2 font-semibold text-ink-0 hover:bg-gold-hi disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                 >
                     Confirm and send
                 </button>
-                <button type="button" onClick={onEdit} className="rounded-full border border-white/20 px-5 py-2 text-fg hover:border-white/40 hover:bg-white/5">
+                <button type="button" onClick={onEdit} className="rounded-full border border-white/20 px-5 py-2 text-fg hover:border-white/40 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
                     Edit
                 </button>
             </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { createLineSplitter, parseEventLine } from "@/lib/assistant/ndjson";
+import { parseClientEvent } from "@/lib/assistant/client-events";
+import { createLineSplitter } from "@/lib/assistant/line-splitter";
 import type { AppEvent, FallbackReason, Proposal } from "@/lib/assistant/protocol";
 
 export type ChatMessage = { id: string; role: "user" | "assistant"; text: string };
@@ -26,7 +27,7 @@ async function readEvents(body: ReadableStream<Uint8Array>, onEvent: (event: App
     for (;;) {
         const { value, done } = await reader.read();
         if (done) return;
-        const event = parseEventLine(value);
+        const event = parseClientEvent(value);
         if (event) onEvent(event);
     }
 }
