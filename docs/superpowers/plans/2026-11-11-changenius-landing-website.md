@@ -1,5 +1,10 @@
 # Changenius Landing Page (Website) Implementation Plan
 
+> **Executed, then partly superseded (owner, 11 Nov 2026).** Tasks 1–11 are complete. The planet hero
+> (Tasks 6–7), the header and its menu (Task 4), the hero buttons and the module commercials (Task 5)
+> were later replaced or removed at the owner's request. `docs/sit/2026-11-11-landing-sit.md`, section
+> "Hero swap and page restructure", has the current state.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the cellgenius-ai.com site with a Changenius-only landing page: a cinematic "planets" opening with rotating statements, the EPMO AI Assistant chat panel (with its secure server relay), the commercial films, a sign-in panel, and the demo films.

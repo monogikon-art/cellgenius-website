@@ -1,6 +1,13 @@
 # Changenius landing page and website assistant — phase 1 design
 
 **Date:** 2026-11-11 · **Status:** approved by the owner in conversation, spec awaiting review
+
+> **Superseded in part (owner, 11 Nov 2026).** The hero no longer uses the planets and orbit stage of
+> §4.1. It now plays the app's sign-in wordmark show, copied as it is, at 2× speed. The top header and
+> the three hero buttons are removed, and so are the module commercials of §4.3. The page order is now:
+> hero → assistant → sign-in panel → films (2-minute film, then Deeper Look, then Executive demo) →
+> footer. `docs/sit/2026-11-11-landing-sit.md`, section "Hero swap and page restructure", has the
+> current state. Everything about the assistant (§5) still stands.
 **Repos:** this website (`monogikon-art/cellgenius-website`) and the app (`monogikon-art/ppm-app`)
 
 ## 1. Goal

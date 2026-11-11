@@ -190,6 +190,7 @@ Tested at the commit that carries this section. Production builds with the assis
 | H3 | The copied show re-measures on every window resize, and its measuring step restarts the loop from the beginning. On phones, the address bar showing or hiding fires a resize, so scrolling near the top could restart the show. Same behaviour as on the login page. | Minor | **Fixed** in the website copy (the one deliberate change from the app): a resize re-measures only when the width changes. e2e: a height-only resize leaves the loop running, a width change restarts it |
 | H4 | The ring icon kept the login's `role="img"` and name "Changenius", next to the show's own label, so a screen reader heard the name twice in the hero. | Minor | **Fixed**: the icon is decorative (`aria-hidden`), so the name is heard once, from the show |
 
+## Not tested
 
 - **The live app endpoint (Plan B)**: only the local stub of `/api/public/website-assistant` was used. Real answers, cost limits and the app's own rate limits were not exercised.
 - **Real email**: no demo request was delivered to info@cellgenius-ai.com. The stub only says it was.
