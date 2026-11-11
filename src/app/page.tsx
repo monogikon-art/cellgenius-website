@@ -1,3 +1,15 @@
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { SignInPanel } from "@/components/SignInPanel";
+
 export default function Home() {
-    return <main id="main" className="grid min-h-dvh place-items-center text-fg">Changenius</main>;
+    return (
+        <>
+            <Header />
+            <main id="main" className="pt-16">
+                <SignInPanel />
+            </main>
+            <Footer />
+        </>
+    );
 }
