@@ -1,0 +1,5 @@
+.next-e2e-off
+test-results
+playwright-report
+docs/sit
+tsconfig.tsbuildinfo
