@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { cn } from "@/lib/cn";
 import { ORBIT_FLATTEN, ORBIT_RADII, ORBIT_SCALE, angularSpeed, orbitPoint } from "./orbit";
 
-export function OrbitStage({ launched, running, labels }: { launched: number; running: boolean; labels: readonly string[] }) {
+const MOTION_START = ORBIT_RADII.map((_, i) => -Math.PI / 2 + i * 1.3);
+// Hand-placed so all five planets and labels stay on a 390px-wide phone and clear of the name, "Meet" and the buttons.
+const STILL_START = [Math.PI / 2, Math.PI / 2 + 0.6, Math.PI / 2 - 0.6, -Math.PI / 2 + 0.45, -Math.PI / 2 - 0.45];
+
+type OrbitStageProps = { launched: number; running: boolean; labels: readonly string[]; still?: boolean };
+
+export function OrbitStage({ launched, running, labels, still = false }: OrbitStageProps) {
     const planets = useRef<(SVGGElement | null)[]>([]);
-    const angles = useRef(ORBIT_RADII.map((_, i) => Math.PI / 2 + i * 1.3));
+    const angles = useRef([...(still ? STILL_START : MOTION_START)]);
+    const gradient = `planet-${useId().replace(/[^w-]/g, "")}`;
 
     useEffect(() => {
         const place = () =>
@@ -38,12 +45,12 @@ export function OrbitStage({ launched, running, labels }: { launched: number; ru
             className="pointer-events-none absolute left-1/2 top-1/2 w-[min(1600px,180vw)] -translate-x-1/2 -translate-y-1/2"
         >
             <defs>
-                <radialGradient id="planet-gold" cx="35%" cy="30%" r="70%">
+                <radialGradient id={`${gradient}-gold`} cx="35%" cy="30%" r="70%">
                     <stop offset="0%" stopColor="#f0d29a" />
                     <stop offset="55%" stopColor="#c39a55" />
                     <stop offset="100%" stopColor="#1b2540" />
                 </radialGradient>
-                <radialGradient id="planet-peri" cx="35%" cy="30%" r="70%">
+                <radialGradient id={`${gradient}-peri`} cx="35%" cy="30%" r="70%">
                     <stop offset="0%" stopColor="#c7cdfd" />
                     <stop offset="55%" stopColor="#6366f1" />
                     <stop offset="100%" stopColor="#101828" />
@@ -69,7 +76,7 @@ export function OrbitStage({ launched, running, labels }: { launched: number; ru
                         }}
                         className={cn("transition-opacity duration-700", i < launched ? "opacity-100" : "opacity-0")}
                     >
-                        <circle r={9 + i * 1.5} fill={`url(#planet-${i % 2 ? "peri" : "gold"})`} />
+                        <circle r={9 + i * 1.5} fill={`url(#${gradient}-${i % 2 ? "peri" : "gold"})`} />
                         <text y={30 + i * 1.5} textAnchor="middle" className="fill-muted text-[13px] font-semibold tracking-[0.25em] max-sm:translate-y-3 max-sm:text-[24px]">
                             {labels[i]}
                         </text>

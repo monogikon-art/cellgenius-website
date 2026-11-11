@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-    await page.route("**/media/**", (route) => route.fulfill({ status: 204 }));
+    await page.route((url) => url.pathname.startsWith("/media/"), (route) => route.fulfill({ status: 204 }));
 });
 
 test("the hero cycles the film's statements with no console errors", async ({ page }) => {
@@ -30,7 +30,9 @@ test.describe("reduced motion", () => {
     test("shows a still with every planet, and pause holds the statement", async ({ page }) => {
         await page.goto("/");
         for (const word of ["CHANGE", "AI", "AGENTIC AI", "CHAIN", "GENIUS"]) {
-            await expect(page.locator("svg text", { hasText: new RegExp(`^${word}$`) })).toBeVisible();
+            const label = page.locator("svg text", { hasText: new RegExp(`^${word}$`) });
+            await expect(label).toBeInViewport({ ratio: 1 });
+            await expect(label.locator("..")).toHaveCSS("opacity", "1");
         }
         await expect(page.locator("video[data-hero-backdrop]")).toHaveCount(0);
         await page.getByRole("button", { name: "Pause animation" }).click();
@@ -38,5 +40,15 @@ test.describe("reduced motion", () => {
         await expect(first).toBeVisible();
         await page.waitForTimeout(7_000);
         await expect(first).toBeVisible();
+    });
+});
+
+test.describe("reduced motion before hydration", () => {
+    test.use({ reducedMotion: "reduce", javaScriptEnabled: false });
+
+    test("the server-rendered backdrop video stays hidden", async ({ page }) => {
+        await page.goto("/");
+        await expect(page.locator("video[data-hero-backdrop]")).toHaveCount(1);
+        await expect(page.locator("video[data-hero-backdrop]")).toBeHidden();
     });
 });

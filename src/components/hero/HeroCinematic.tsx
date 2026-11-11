@@ -33,7 +33,7 @@ export function HeroCinematic() {
                 type="button"
                 onClick={() => setPaused((p) => !p)}
                 aria-label={paused ? "Play animation" : "Pause animation"}
-                className="absolute bottom-6 right-6 z-20 grid size-11 place-items-center rounded-full border border-white/15 bg-ink-0/50 text-muted backdrop-blur hover:border-gold hover:text-gold"
+                className="absolute bottom-6 right-6 z-20 grid size-11 place-items-center rounded-full border border-white/15 bg-ink-0/50 text-muted backdrop-blur hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
             >
                 {paused ? <Play aria-hidden="true" className="size-4" /> : <Pause aria-hidden="true" className="size-4" />}
             </button>
@@ -80,7 +80,7 @@ function HeroStill({ paused }: { paused: boolean }) {
             statement={statements[index]}
             stage={
                 <>
-                    <OrbitStage launched={BURST.length} running={false} labels={LABELS} />
+                    <OrbitStage launched={BURST.length} running={false} labels={LABELS} still />
                     <NameMorph phase={STILL_PHASE} running={false} />
                 </>
             }
@@ -98,24 +98,25 @@ function Backdrop({ reduced, running }: { reduced: boolean; running: boolean }) 
     }, [running]);
     return (
         <div aria-hidden="true" className="absolute inset-0 -z-10">
-            {reduced ? (
-                <div className="size-full bg-[url(/hero/backdrop-poster.webp)] bg-cover bg-center opacity-40 sm:opacity-60" />
-            ) : (
-                <video
-                    ref={video}
-                    data-hero-backdrop
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                    poster="/hero/backdrop-poster.webp"
-                    className="size-full object-cover opacity-40 sm:opacity-60"
-                >
-                    <source src="/hero/backdrop.webm" type="video/webm" />
-                    <source src="/hero/backdrop.mp4" type="video/mp4" />
-                </video>
-            )}
+            <div className="absolute inset-0 opacity-40 sm:opacity-60">
+                <div className="size-full bg-[url(/hero/backdrop-poster.webp)] bg-cover bg-center" />
+                {reduced ? null : (
+                    <video
+                        ref={video}
+                        data-hero-backdrop
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="auto"
+                        poster="/hero/backdrop-poster.webp"
+                        className="absolute inset-0 size-full object-cover"
+                    >
+                        <source src="/hero/backdrop.webm" type="video/webm" />
+                        <source src="/hero/backdrop.mp4" type="video/mp4" />
+                    </video>
+                )}
+            </div>
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(3,6,12,0.55)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-0" />
         </div>

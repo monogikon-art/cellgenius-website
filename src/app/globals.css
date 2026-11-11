@@ -47,4 +47,5 @@ body {
     html { scroll-behavior: auto; }
     .animate-statement { animation: fade-only 400ms ease-out both; }
     .animate-meet { animation: none; }
+    [data-hero-backdrop] { display: none; }
 }

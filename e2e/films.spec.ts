@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-    await page.route("**/media/**", (route) => route.fulfill({ status: 204 }));
+    await page.route((url) => url.pathname.startsWith("/media/"), (route) => route.fulfill({ status: 204 }));
 });
 
 test("the featured film opens in the viewer and Escape returns focus", async ({ page }) => {
