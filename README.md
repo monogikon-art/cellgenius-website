@@ -1,7 +1,7 @@
 # cellgenius-ai.com
 
-The Changenius landing page: a cinematic hero, the EPMO AI Assistant (a chat relayed to the
-Changenius app), the films, a sign-in panel and the demo chapters. Next.js 15, React 19,
+The Changenius landing page: a hero playing the app's CHANGENIUS wordmark show, the EPMO AI Assistant (a chat relayed to the
+Changenius app), a sign-in panel, and the films (the 2-minute film, then the demo chapters). Next.js 15, React 19,
 Tailwind CSS 4.
 
 The design and its reasons are in

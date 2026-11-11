@@ -2,6 +2,10 @@
 
 **Date:** 11 Nov 2026 · **Branch:** `revamp/changenius-landing` (worktree `C:/Websites/cellgenius-website`), tested at `72cc755` plus the documentation added with this report · **Not pushed.**
 
+> **Superseded in part (later on 11 Nov 2026):** the planet hero, the header, the hero buttons and the module
+> commercials described below are gone. See [Hero swap and page restructure](#hero-swap-and-page-restructure-owner-decisions-11-nov-2026)
+> at the end. The screenshots in `2026-11-11-shots/` were all retaken for it.
+
 ## Result in one paragraph
 
 Every automated check passed. A production build was tested twice: with the assistant **on** (Turnstile test keys and a stub of the app on port 3199) and **off** (how the site will launch). The Content Security Policy blocked nothing in either build, and every script on the page carries the nonce. The chat answered. Lighthouse on a phone profile scores **98 performance / 100 accessibility with the assistant off**. With the assistant **on**, performance drops to **75**, because Cloudflare Turnstile loads with the page. That has to be fixed before the assistant is switched on, but it does not affect launch. The decorative planet labels in the hero fall below normal text contrast when they pass over the glow or the big word.
@@ -65,19 +69,21 @@ Three demo-tile readings at the very top of the screen came out as 1.0 because t
 
 | File | Shows | Seen |
 |---|---|---|
-| `01-hero-mid-word` | "AGENTIC AI" while it morphs | OK. Retaken after the follow-up: the CHANGE label dims while it crosses the word |
-| `02-hero-close` | "CHANGE IN US" | OK. Retaken after the follow-up: on phone the labels stay inside the screen |
-| `03-hero-reduced-motion` | Still frame, all planets | OK. Retaken with the brighter labels and halo |
+| `01-hero-mid-word` | Wordmark show, act "born from the top": AGENTIC AI built from the name (14.5 s into the 147.2 s loop) | OK |
+| `02-hero-close` | The closure: CHANGE IN US and "The change is in us" (144.5 s) | OK |
+| `03-hero-reduced-motion` | Reduced motion: the show's static CHANGENIUS, no backdrop video | OK |
 | `04-assistant-empty` | Chips, message box, footnote | OK |
-| `05-assistant-answer` | Answer with an own-domain link | OK. The link to another domain is shown as plain text |
+| `05-assistant-answer` | Answer with an own-domain link | OK |
 | `06-assistant-request-card` | Demo request card | OK. On phone the card scrolls inside the conversation |
 | `07-assistant-sent` | Confirmation line | OK |
-| `08-films` | Film section | OK. Retaken after the follow-up: the missing poster now leaves the designed title card |
+| `08-films` | Films section: the 2-minute film first | OK. Poster 404 locally, so the designed title card shows |
 | `09-film-viewer` | Viewer dialog | Spinner only: no media locally |
-| `10-sign-in` | Sign-in panel | OK |
-| `11-demos` | Demo chapters | OK |
-| `12-hero-assistant-off` | Hero with the assistant off: "Questions? Email us" | OK. The phone frame was caught while the name blurs in, which is the intro animation |
-| `13-assistant-off-section` | The email line in place of the chat; header says "Contact" | OK |
+| `10-sign-in` | Sign-in panel, now above the films | OK |
+| `11-film-chapters` | The executive demo chapters, after the deeper look, inside the films section (replaces `11-demos`) | OK |
+| `12-hero-assistant-off` | Hero with the assistant off (the hero no longer differs: no buttons) | OK |
+| `13-assistant-off-section` | The email line in place of the chat | OK |
+| `14-hero-hub-cascade` | Act "hub cascade": CHANGE morphing in place (54 s) | OK |
+| `15-hero-constellation` | Act "constellation": five orbiting words round CHANGENIUS (139 s) | OK on desktop. On phone the outer script lines touch or cross the screen edge (finding H1) |
 
 ## Findings
 
@@ -144,15 +150,46 @@ Before: desktop medians 2.2–7.7, phone 2.0–4.1. One phone sample had a singl
 
 - Middleware matcher not anchored (`api|media|icon.svg`). It is a guarded file, so changing it needs an owner-approved script.
 - Two anonymous-default-export lint warnings.
-- The phone menu's navigation label is the same as the desktop one ("Sections"). The Escape path in the phone menu is not tested.
 - With reduced motion, the hidden backdrop video may still download before hydration (`preload="auto"`).
-- No e2e that Pause stops the motion cycle.
 - The rate limiter is per instance (the app's limits are the real ones).
 - The e2e stub does not record calls. The Markdown parser is slow on an unclosed `[`. The Playwright servers do not reuse running ones, so ports must be free.
-- With the assistant on, the hero button focuses the message box. If it is clicked in the first ~0.6 s, before the chat chunk arrives, nothing gets focus.
 - The Vercel `MEDIA_BASE_URL` warning may print more than once per build.
 
-## Not tested
+## Hero swap and page restructure (owner decisions, 11 Nov 2026)
+
+Tested at the commit that carries this section. Production builds with the assistant **on** (Turnstile test keys, app stub on 3199, server on 3200) and **off** (server on 3201).
+
+**What changed.**
+
+1. **Hero.** The planet visualisation is replaced by the app's login-page wordmark show, copied unchanged from `ppm-app` `origin/master@b3f65f48` (`src/components/brand/changenius-wordmark-show.tsx` and its generated CSS module, byte-identical apart from a one-line provenance comment), with the login's ring-and-spark icon above it, in the login's 448 px column. It runs at **twice the login tempo** (one loop is 147.2 s instead of 294.4 s) through one scoped rule in `globals.css`; the generated CSS is not edited. Pause, scrolling the hero away or hiding the tab pauses the show (`animation-play-state: paused` via `data-paused`), the backdrop video and the statement. The statement above it is now an independent rotator: seven lines, 6 s each. Reduced motion shows the show's own static CHANGENIUS and no backdrop video. The planet code (`OrbitStage`, `NameMorph`, `morph`, `orbit`, `timeline`, their 11 unit tests) is deleted.
+2. **Hero buttons removed** ("Ask the EPMO AI Assistant" / "Questions? Email us", "Watch the film", "Sign in"), with their focus logic.
+3. **Header removed** (fixed bar, phone menu, nav list, skip link, the `pt-16` offset). The footer keeps the wordmark and the assistant note.
+4. **Module commercials removed** (the eight `/manual/<module>/commercial.mp4` films).
+5. **One films section:** the 2-minute film, then *A deeper look* (13 chapters), then *The executive demo* (9). Next-chapter behaviour unchanged.
+6. **Page order:** hero → assistant → sign-in panel → films → footer.
+
+**Checks.**
+
+| Check | Result |
+|---|---|
+| `npm run typecheck` | Pass, 0 errors |
+| `npm run lint` | 0 errors, the same 2 warnings |
+| `npx vitest run` | Pass: 9 files, **83 tests** (planet tests removed; content test now pins the statement list, the chapter order and no module commercials) |
+| `npm run build` (on and off) | Pass. `/` 23.5 kB, 126 kB First Load JS |
+| `npx playwright test` (desktop, phone, assistant-off) | Pass: **40 passed** (the phone-menu skip is gone with the menu). New: the show is visible with its login label and icon, runs at 147.2 s, pause sets `paused` on the show and holds the statement, play resumes both; reduced motion shows the still wordmark with no video; no header or navigation; section order; films order with 23 tiles |
+| CSP, production build, on and off | Pass. **0** "Content Security Policy" / "Refused to" messages. **19/19** scripts carry the nonce. The show's `measure()` injects a `<style>` and sets inline custom properties; `style-src 'unsafe-inline'` allows both, and the measured offsets were present (e.g. `--dx: -52.8px`). The only console errors are the film poster 404 (no `MEDIA_BASE_URL` locally) |
+| Overlap at 1440×900, 1280×720, 390×844 | None. Statement 24–228 px / show 398–798 px of a 900 px hero (desktop); 24–226 / 310–710 of 726 (1280×720: 6 px below the fold, empty in most acts); 24–152 / 332–732 of 844 (phone). The pause button sits clear of the show's columns |
+| Screenshots | All 30 retaken (two new: `14`, `15`) and looked at; frames chosen by setting the show's animation time |
+
+**Findings.**
+
+| # | Finding | Severity | Status |
+|---|---|---|---|
+| H1 | On a 390 px phone, in the constellation act (about 24 s of each loop), the small script lines under CHANGE and AGENTIC AI run a few pixels past the screen edge, and the CHANGE and AI script lines touch. The show was designed for the login's 448 px column, which the app only shows on large screens. | Cosmetic | Open, for the owner. Not fixed here because "as it is" rules out editing the show, and shrinking it does not work (H2) |
+| H2 | Shrinking the show with `transform: scale()` or CSS `zoom` breaks it: `measure()` reads on-screen distances, which the scale then applies a second time, so travelling letters start about 16% off their source letter (measured: 6 px / 15 px out at 0.8). | Design constraint | No scale is used. The hero is laid out so the show fits unscaled at all three sizes |
+| H3 | The copied show re-measures on every window resize, and its measuring step restarts the loop from the beginning. On phones, the address bar showing or hiding fires a resize, so scrolling near the top can restart the show. Same behaviour as on the login page. | Minor | Open. Changing it means changing the app's component |
+| H4 | The ring icon keeps the login's `role="img"` and name "Changenius", next to the show's own label, so a screen reader hears the name twice in the hero. | Minor | Kept, to match the login |
+
 
 - **The live app endpoint (Plan B)**: only the local stub of `/api/public/website-assistant` was used. Real answers, cost limits and the app's own rate limits were not exercised.
 - **Real email**: no demo request was delivered to info@cellgenius-ai.com. The stub only says it was.
