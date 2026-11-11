@@ -185,10 +185,48 @@ Tested at the commit that carries this section. Production builds with the assis
 
 | # | Finding | Severity | Status |
 |---|---|---|---|
-| H1 | On a 390 px phone, in the constellation act (about 24 s of each loop), the small script lines under CHANGE and AGENTIC AI run a few pixels past the screen edge, and the CHANGE and AI script lines touch. The show was designed for the login's 448 px column, which the app only shows on large screens. | Cosmetic | Open, for the owner. Not fixed here because "as it is" rules out editing the show, and shrinking it does not work (H2) |
+| H1 | On a 390 px phone, in the constellation act (about 24 s of each loop), the small script lines under CHANGE and AGENTIC AI run a few pixels past the screen edge, and the CHANGE and AI script lines touch. The show was designed for the login's 448 px column, which the app only shows on large screens. | Cosmetic | Open at the time; **fixed** in the hero enlargement below |
 | H2 | Shrinking the show with `transform: scale()` or CSS `zoom` breaks it: `measure()` reads on-screen distances, which the scale then applies a second time, so travelling letters start about 16% off their source letter (measured: 6 px / 15 px out at 0.8). | Design constraint | No scale is used. The hero is laid out so the show fits unscaled at all three sizes |
 | H3 | The copied show re-measures on every window resize, and its measuring step restarts the loop from the beginning. On phones, the address bar showing or hiding fires a resize, so scrolling near the top could restart the show. Same behaviour as on the login page. | Minor | **Fixed** in the website copy (the one deliberate change from the app): a resize re-measures only when the width changes. e2e: a height-only resize leaves the loop running, a width change restarts it |
 | H4 | The ring icon kept the login's `role="img"` and name "Changenius", next to the show's own label, so a screen reader heard the name twice in the hero. | Minor | **Fixed**: the icon is decorative (`aria-hidden`), so the name is heard once, from the show |
+
+## Hero enlargement (owner, 11 Nov 2026)
+
+**What changed.**
+
+1. **Rotating statements removed.** `StatementRotator`, `HERO_STATEMENTS`, their test and e2e assertions, and the `statement-in` / `fade-only` CSS are deleted. The hero keeps the sr-only `h1`, the backdrop video and poster, the pause button (it still pauses the show and the video) and reduced motion.
+2. **The show is about 1.6× larger and centred** in a 896 px column (was 448 px): CHANGENIUS up to 88 px (was 56), the formed words and the name above them up to 64 px (was 38), the constellation's centre name 48 px (was 30), the orbit words 28 px (was 19), the closure 88 px. Every size is a fluid `clamp()` that shrinks with the screen width. Stage heights and positions grow with it: the stage is 640 px tall, 560 px when the window is 760 px tall or less, 480 px at 600 px or less. No `transform` or `zoom` is used (H2). The two fixed pixel nudges in the keyframes (the guest T, 12 px; one orbit piece, 8 px) became `em`, so they grow with the letters.
+3. **Captions are larger and in sentence case**: 19 px on desktop down to 14 px on a phone (orbit captions and the sub-line 17 px down to 12 px), no uppercase, almost no letter-spacing, centred, allowed to wrap (balanced) within a maximum width.
+4. **New owner wording** for the five captions, the three hub-cascade lines and the sub-line ("Governed change · Powered by AI · One chain from strategy to benefit"). The closure stays "The change is in us". The show's accessible name is one new sentence.
+5. **The copy now deliberately differs from the app's login show**; both files carry the new provenance note. The app's own copy is unchanged. The 2× tempo override stays.
+6. **Re-measure rule widened slightly**: a resize re-measures when the width **or the show's own height** changes. The show's height only changes at the 760 / 600 px window-height steps, which a phone's address bar does not cross (media queries use the fixed initial viewport), so the H3 fix still holds; without it, a desktop window dragged across a step would keep stale travel vectors.
+
+**Checks.**
+
+| Check | Result |
+|---|---|
+| `npm run typecheck` | Pass, 0 errors |
+| `npm run lint` | 0 errors, the same 2 warnings |
+| `npm test` (Vitest) | Pass: 9 files, **83 tests** (the statement test is replaced by a name test) |
+| `npm run build` (assistant off) | Pass. `/` 23.3 kB, 126 kB First Load JS |
+| `npx playwright test` (desktop, phone, assistant-off) | **48 passed** on the second full run. First full run: 46 passed, 2 failed in `assistant.spec.ts` ("answers a question…", desktop and phone, the reply not arriving within 20 s on a cold dev server); that spec alone then passed 12/12, and the full run after it passed 48/48. New hero tests: no statement, the show alone with its new name; the five captions, sub-line and closure line present with the owner's text, and sentence case, wrapping, ≥ 17 px desktop / ≥ 14 px phone; pause stops the show **and the backdrop video**, play resumes both; nothing off screen and `scrollWidth ≤ innerWidth` at 390 and 360 px in seven frames covering every act; reduced motion |
+| Travelling letters (production build, 1440×900, 1280×720, 390×844, 360×740) | At the instant the born-from-top and constellation duplicates appear, each sits exactly on its source letter: worst distance **0.0 px** at all four sizes, so `measure()` still lines them up |
+| Layout, production build, 7 frames × 4 sizes | Nothing off screen, no overlap. Show top/bottom: 178–818 of 900 (1440×900), 116–676 of 720 (1280×720), 138–778 of 844 (390×844), 126–686 of 740 (360×740). The pause button sits clear of the show at all four |
+| Screenshots | 32 taken from a production build and looked at (below) |
+
+**Screenshots** (`2026-11-11-shots/`): `desktop-` is 1440×900, `laptop-` 1280×720, `phone-` 390×844 (was a Pixel 7 before), `small-phone-` 360×740. For each: `01-hero-mid-word` (AGENTIC AI with its caption, 13.8 s), `02-hero-close` (CHANGE IN US, 144.6 s), `03-hero-reduced-motion`, `12-hero-assistant-off` (the CHANGE beat, 4 s), `14-hero-hub-cascade` (CHANGE morphing in place with its line, 53.6 s), `15-hero-constellation` (138 s), and new: `16-hero-hub-subline` (the sub-line, 56 s) and `17-hero-chain` (the longest caption, 18.8 s). Frames were held by setting a negative `animation-delay` in a throwaway script; the backdrop video was hidden for the shots, so the poster shows.
+
+**Findings.**
+
+| # | Finding | Severity | Status |
+|---|---|---|---|
+| H1 | Constellation captions running off a 390 px screen (from the hero swap) | Cosmetic | **Fixed**: orbit boxes are now 44% of the stage (at most 330 px) instead of a fixed 230 px, so at 360 and 390 px every caption stays on screen (tested in e2e). On phones the CHAIN caption wraps to four short lines in the constellation, the others to three |
+| H5 | Reduced motion was meant to show the sub-line under the still name, but `.stories span { opacity: 0 }` outranked the reduced-motion `.sSub { opacity: 1 }`, so only the name showed. Present in the app's copy too | Minor | **Fixed** in the website copy (`.stories .sSub`); the sub-line now shows under the still CHANGENIUS (`03-hero-reduced-motion`) |
+| H6 | The first sub-line layout wrapped onto two lines on desktop | Cosmetic | **Fixed**: wider maximum width; one line on desktop and laptop, two on phones |
+| H7 | At 360 px the closure CHANGE IN US first spanned 20–340 px, close to the 16 px gutter | Cosmetic | **Fixed**: the name's fluid size was reduced from 12vw to 11.5vw |
+| H8 | `next dev` / `next build` rewrote `tsconfig.json` (reformatting and adding a `.next-sit-wa` include) | Tooling | Reverted, not committed |
+
+**Not verified.** Contrast of the new caption sizes was not re-measured from screen pixels (the colours are the ones measured before; larger text only helps). No real phone, Safari or Firefox; the address-bar behaviour of the new height steps rests on the browsers' documented fixed initial viewport, not on a device. No screen-reader pass of the new accessible name.
 
 ## Not tested
 
