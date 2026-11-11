@@ -3,9 +3,9 @@ import { z } from "zod";
 export const MAX_MESSAGE = 1000;
 
 export const ClientRequestSchema = z.discriminatedUnion("action", [
-    z.object({ action: z.literal("start"), turnstileToken: z.string().min(1).max(2048) }),
-    z.object({ action: z.literal("message"), message: z.string().trim().min(1).max(MAX_MESSAGE) }),
-    z.object({ action: z.literal("confirm"), requestId: z.uuid() }),
+    z.strictObject({ action: z.literal("start"), turnstileToken: z.string().min(1).max(2048) }),
+    z.strictObject({ action: z.literal("message"), message: z.string().trim().min(1).max(MAX_MESSAGE) }),
+    z.strictObject({ action: z.literal("confirm"), requestId: z.uuid() }),
 ]);
 export type ClientRequest = z.infer<typeof ClientRequestSchema>;
 

@@ -8,7 +8,8 @@ export function createTokenBucket(opts: { capacity: number; refillPerMinute: num
         take(key, now = Date.now()) {
             const prev = state.get(key);
             const tokens = prev ? Math.min(opts.capacity, prev.tokens + (now - prev.at) * perMs) : opts.capacity;
-            if (!prev && state.size >= maxKeys) state.clear();
+            if (prev) state.delete(key);
+            else if (state.size >= maxKeys) state.delete(state.keys().next().value as string);
             if (tokens < 1) {
                 state.set(key, { tokens, at: now });
                 return false;

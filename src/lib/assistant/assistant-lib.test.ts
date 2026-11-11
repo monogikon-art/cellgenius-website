@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { clientIp, hashIp } from "./client-ip";
 import { COOKIE_TTL_MS, cookieHeader, issueConversation, readConversation } from "./cookie";
 import { readAssistantEnv } from "./env";
-import { createLineSplitter, encodeEvent, filterEventStream, parseEventLine } from "./ndjson";
+import { MAX_LINE, createLineSplitter, encodeEvent, filterEventStream, parseEventLine } from "./ndjson";
 import { AppEventSchema, ClientRequestSchema } from "./protocol";
 import { createTokenBucket } from "./rate-limit";
 import { sign, signedHeaders } from "./sign";
@@ -150,5 +150,81 @@ describe("env", () => {
                 SITE_ORIGIN: "https://site.test",
             }),
         ).not.toBeNull();
+    });
+});
+
+describe("hardening", () => {
+    const goodEnv = {
+        TURNSTILE_SECRET_KEY: "t",
+        ASSISTANT_COOKIE_SECRET: "c".repeat(32),
+        IP_HASH_SALT: "s".repeat(16),
+        WEBSITE_ASSISTANT_SECRET: "w".repeat(32),
+        APP_ASSISTANT_URL: "https://app.test/api/public/website-assistant",
+        SITE_ORIGIN: "https://site.test",
+    };
+
+    it("splitter discards an oversize line and resumes at the next newline", async () => {
+        const out: string[] = [];
+        const source = new ReadableStream<string>({
+            start(c) {
+                c.enqueue("x".repeat(MAX_LINE + 4096));
+                c.enqueue('\n{"type":"done"}');
+                c.close();
+            },
+        });
+        await source.pipeThrough(createLineSplitter()).pipeTo(new WritableStream<string>({ write: (l) => void out.push(l) }));
+        expect(out).toEqual(['{"type":"done"}']);
+    });
+
+    it("env refuses insecure or malformed URLs and short secrets", () => {
+        expect(readAssistantEnv({ ...goodEnv, APP_ASSISTANT_URL: "http://app.example.com/api/x" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, APP_ASSISTANT_URL: "https://app.test/api/x?a=1" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, APP_ASSISTANT_URL: "https://app.test/api/x#h" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, APP_ASSISTANT_URL: "http://localhost:3199/api/x", SITE_ORIGIN: "http://localhost:3000" })).not.toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, SITE_ORIGIN: "https://site.test/path" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, SITE_ORIGIN: "https://site.test/?q=1" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, ASSISTANT_COOKIE_SECRET: "short" })).toBeNull();
+    });
+
+    it("rate limit evicts the oldest key, not everything, at maxKeys", () => {
+        const bucket = createTokenBucket({ capacity: 1, refillPerMinute: 0, maxKeys: 2 });
+        expect(bucket.take("a", 0)).toBe(true);
+        expect(bucket.take("b", 0)).toBe(true);
+        expect(bucket.take("a", 0)).toBe(false);
+        expect(bucket.take("b", 0)).toBe(false);
+        expect(bucket.take("c", 0)).toBe(true);
+        expect(bucket.take("b", 0)).toBe(false);
+        expect(bucket.take("a", 0)).toBe(true);
+    });
+
+    it("client requests refuse unknown keys", () => {
+        expect(ClientRequestSchema.safeParse({ action: "message", message: "hi", history: [] }).success).toBe(false);
+        expect(ClientRequestSchema.safeParse({ action: "start", turnstileToken: "t", extra: 1 }).success).toBe(false);
+        expect(ClientRequestSchema.safeParse({ action: "confirm", requestId: crypto.randomUUID(), extra: 1 }).success).toBe(false);
+    });
+
+    it("cookie rejects a tampered conversation id and a wrong-length MAC", () => {
+        const secret = "k".repeat(32);
+        const c = issueConversation(secret, 1000);
+        const [, exp, mac] = c.value.split(".");
+        expect(readConversation(secret, `${crypto.randomUUID()}.${exp}.${mac}`, 1001)).toBeNull();
+        expect(readConversation(secret, `${c.conversationId}.${exp}.${mac.slice(1)}`, 1001)).toBeNull();
+        expect(issueConversation(secret, 1000.7).expiresAt).toBe(1000 + COOKIE_TTL_MS);
+    });
+
+    it("filterEventStream strips unknown keys", async () => {
+        const filtered = await new Response(filterEventStream(streamOf('{"type":"delta","text":"a","html":"<b>"}\n'))).text();
+        expect(filtered).toBe('{"type":"delta","text":"a"}\n');
+    });
+
+    it("turnstile is false on non-2xx and on a string success", async () => {
+        vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(Response.json({ success: true }, { status: 500 })));
+        expect(await verifyTurnstile("tok", "sec", null)).toBe(false);
+        vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(Response.json({ success: "true" })));
+        expect(await verifyTurnstile("tok", "sec", null)).toBe(false);
+    });
+
+    it("client ip is capped at 64 characters", () => {
+        expect(clientIp(new Headers({ "x-real-ip": "1".repeat(200) }))).toHaveLength(64);
     });
 });

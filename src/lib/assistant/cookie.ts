@@ -7,7 +7,7 @@ const mac = (secret: string, payload: string) => createHmac("sha256", secret).up
 
 export function issueConversation(secret: string, now = Date.now()) {
     const conversationId = randomUUID();
-    const expiresAt = now + COOKIE_TTL_MS;
+    const expiresAt = Math.floor(now) + COOKIE_TTL_MS;
     const payload = `${conversationId}.${expiresAt}`;
     return { conversationId, expiresAt, value: `${payload}.${mac(secret, payload)}` };
 }
