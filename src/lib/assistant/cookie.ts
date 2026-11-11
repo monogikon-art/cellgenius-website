@@ -28,3 +28,9 @@ export function cookieHeader(value: string, secure: boolean): string {
     if (secure) parts.push("Secure");
     return parts.join("; ");
 }
+
+export function clearCookieHeader(secure: boolean): string {
+    const parts = [`${COOKIE_NAME}=`, "Path=/api/assistant", "HttpOnly", "SameSite=Strict", "Max-Age=0"];
+    if (secure) parts.push("Secure");
+    return parts.join("; ");
+}
