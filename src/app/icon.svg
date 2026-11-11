@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Changenius app icon: the ring and spark on ink">
+  <!--
+    The home-screen / install icon. MASTER SOURCE — every PNG in public/ and the favicon are
+    rendered from this file by `npm run icons:build` (scripts/build-app-icons.ts). Edit here, re-run.
+
+    The mark: RING AND SPARK, chosen by the owner on 2026-09-05 from docs/brand/logo-round-2/
+    (winner: ring-glass-1). A heavy porcelain ring — a governed cycle — open at the upper right,
+    where the gap holds a four-point champagne-gold spark: the genius moment. The whole mark also
+    reads as a capital C. Redrawn here as exact geometry rather than traced: ring centred at
+    512/512, outer radius 280, inner 180, body from 24° clockwise round to 304°; spark centred on
+    the ring's mid-radius at -30°. The soft "glass" finish of the winning picture is kept — a
+    vertical porcelain gradient, a thin gold rim, a top-edge highlight and a soft drop shadow — and
+    its drawn-in rounded frame is dropped, because the platforms apply their own corner mask.
+
+    Rules this file obeys, because the platforms impose them:
+    - Full-bleed square, OPAQUE, NO rounded corners. iOS and Android apply their own mask; an icon that
+      bakes its own corners shows a dark halo inside the platform's rounding.
+    - The mark sits inside the central 80% (x/y 102..922), Android's "maskable" safe zone, so the same
+      artwork survives a circle, a squircle and a rounded square without clipping.
+    - Palette only: deep ink ground, porcelain white, champagne gold. No letters, no text.
+    The same geometry, flat and in currentColor, is ChaingeIcon (src/components/brand/chainge-logo.tsx)
+    and the browser-tab icon (src/app/icon.svg).
+  -->
+  <defs>
+    <radialGradient id="ground" cx="50%" cy="38%" r="78%">
+      <stop offset="0"   stop-color="#1b2540"/>
+      <stop offset="0.6" stop-color="#101828"/>
+      <stop offset="1"   stop-color="#0a0e1a"/>
+    </radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"   stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1"   stop-color="#000000" stop-opacity="0.12"/>
+    </linearGradient>
+    <linearGradient id="porcelain" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#f2f5f8"/>
+      <stop offset="1"   stop-color="#dde3ea"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0d29a"/>
+      <stop offset="1" stop-color="#c39a55"/>
+    </linearGradient>
+    <linearGradient id="goldSpark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3d7a2"/>
+      <stop offset="1" stop-color="#c9a15a"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="20" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.6 0"/>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <!-- the ring body: outer arc 24° → 304° clockwise, radial cut, inner arc back -->
+    <path id="ring" d="M767.79 625.89 A280 280 0 1 1 668.57 279.87 L612.65 362.77 A180 180 0 1 0 676.44 585.21 Z"/>
+    <clipPath id="ringClip"><use href="#ring"/></clipPath>
+    <!-- the spark: four points, concave sides, on the ring's mid-radius at -30° -->
+    <path id="spark" d="M711.19 317 Q728.79 379.4 791.19 397 Q728.79 414.6 711.19 477 Q693.59 414.6 631.19 397 Q693.59 379.4 711.19 317 Z"/>
+  </defs>
+
+  <!-- ink ground -->
+  <rect width="1024" height="1024" fill="url(#ground)"/>
+  <rect width="1024" height="1024" fill="url(#sheen)"/>
+
+  <!-- the ring: soft shadow, porcelain body, glass edges, gold rim -->
+  <use href="#ring" fill="#000" fill-opacity="0.5" transform="translate(0 18)" filter="url(#shadow)"/>
+  <use href="#ring" fill="url(#porcelain)"/>
+  <g clip-path="url(#ringClip)">
+    <use href="#ring" fill="none" stroke="#ffffff" stroke-opacity="0.85" stroke-width="14" transform="translate(0 -6)"/>
+    <use href="#ring" fill="none" stroke="#9aa6b5" stroke-opacity="0.35" stroke-width="14" transform="translate(0 6)"/>
+  </g>
+  <use href="#ring" fill="none" stroke="url(#gold)" stroke-width="3.5"/>
+
+  <!-- the spark: gold, with its glow (gold is the AI at work) -->
+  <use href="#spark" fill="#d4af6a" filter="url(#glow)"/>
+  <use href="#spark" fill="url(#goldSpark)"/>
+</svg>
