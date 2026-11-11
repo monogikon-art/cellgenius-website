@@ -8,7 +8,8 @@ const BULLET = /^\s*[-*]\s+/;
 export function safeHref(raw: string): string | null {
     try {
         const url = new URL(raw);
-        return url.protocol === "https:" && ALLOWED_HOSTS.has(url.hostname) ? url.href : null;
+        if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
+        return ALLOWED_HOSTS.has(url.hostname) ? url.href : null;
     } catch {
         return null;
     }
@@ -36,12 +37,18 @@ export function parseMarkdown(source: string): Block[] {
     const blocks: Block[] = [];
     for (const chunk of source.replace(/\r\n/g, "\n").split(/\n{2,}/)) {
         const lines = chunk.split("\n").filter((line) => line.trim() !== "");
-        if (lines.length === 0) continue;
-        if (lines.every((line) => BULLET.test(line))) {
-            blocks.push({ kind: "ul", items: lines.map((line) => parseInline(line.replace(BULLET, ""))) });
-        } else {
-            blocks.push({ kind: "p", inlines: parseInline(lines.join(" ")) });
+        let run: string[] = [];
+        const flush = () => {
+            if (run.length === 0) return;
+            if (BULLET.test(run[0])) blocks.push({ kind: "ul", items: run.map((line) => parseInline(line.replace(BULLET, ""))) });
+            else blocks.push({ kind: "p", inlines: parseInline(run.join(" ")) });
+            run = [];
+        };
+        for (const line of lines) {
+            if (run.length > 0 && BULLET.test(run[0]) !== BULLET.test(line)) flush();
+            run.push(line);
         }
+        flush();
     }
     return blocks;
 }

@@ -6,18 +6,24 @@ const TYPE_LABEL: Record<Proposal["type"], string> = {
     contact: "Message to the team",
 };
 
+function preferredTimes({ type, preferredTimes, timezone }: Proposal): string | undefined {
+    if (type !== "demo") return undefined;
+    if (preferredTimes && timezone) return `${preferredTimes} (${timezone})`;
+    return preferredTimes || timezone || undefined;
+}
+
 export function RequestCard({ proposal, busy, onConfirm, onEdit }: { proposal: Proposal; busy: boolean; onConfirm: () => void; onEdit: () => void }) {
     const rows: Array<[string, string | undefined]> = [
         ["Name", proposal.name],
         ["Work email", proposal.email],
         ["Company", proposal.company],
         ["Role", proposal.role],
-        ["Preferred times", proposal.preferredTimes ? `${proposal.preferredTimes}${proposal.timezone ? ` (${proposal.timezone})` : ""}` : undefined],
+        ["Preferred times", preferredTimes(proposal)],
         ["Message", proposal.message || undefined],
     ];
     return (
-        <section aria-label={TYPE_LABEL[proposal.type]} className="rounded-2xl border border-gold/40 bg-ink-0/60 p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-gold">{TYPE_LABEL[proposal.type]}</h3>
+        <section aria-label={TYPE_LABEL[proposal.type]} className="rounded-2xl border border-white/15 bg-ink-0/60 p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-peri">{TYPE_LABEL[proposal.type]}</h3>
             <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[10rem_1fr]">
                 {rows
                     .filter(([, value]) => value)

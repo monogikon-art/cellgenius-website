@@ -12,6 +12,7 @@ test("answers a question, and links only to our own domains", async ({ page }) =
     await expect(log.getByText("one system")).toBeVisible({ timeout: 20_000 });
     await expect(log.getByRole("link", { name: "the app" })).toHaveAttribute("href", "https://app.cellgenius-ai.com/login");
     await expect(log.getByRole("link", { name: "this" })).toHaveCount(0);
+    await expect(page.locator("#assistant-input")).toBeFocused();
 });
 
 test("prepares a demo request and sends it only on confirm", async ({ page }) => {
@@ -20,9 +21,24 @@ test("prepares a demo request and sends it only on confirm", async ({ page }) =>
     const card = page.getByRole("region", { name: "Demo request" });
     await expect(card).toBeVisible({ timeout: 20_000 });
     await expect(card.getByText("Maria Lopez")).toBeVisible();
-    await expect(page.getByText("The team will reply to maria@example.com", { exact: false })).toHaveCount(0);
+    const sent = page.getByText("Thanks — the team will reply to maria@example.com within one working day.", { exact: true });
+    await expect(sent).toHaveCount(0);
     await card.getByRole("button", { name: "Confirm and send" }).click();
-    await expect(page.getByText("The team will reply to maria@example.com", { exact: false })).toBeVisible();
+    await expect(sent).toBeVisible();
+    await expect(page.locator("#assistant-input")).toBeFocused();
+});
+
+test("Enter while a reply is on its way keeps the draft", async ({ page }) => {
+    await page.goto("/#assistant");
+    const input = page.locator("#assistant-input");
+    await input.fill("A slow question");
+    await input.press("Enter");
+    await expect(page.getByText("Thinking…", { exact: true })).toBeVisible({ timeout: 20_000 });
+    await input.fill("My next question");
+    await input.press("Enter");
+    await expect(input).toHaveValue("My next question");
+    await expect(page.getByRole("log", { name: "Conversation" }).getByText("A slow answer.")).toBeVisible({ timeout: 20_000 });
+    await expect(input).toHaveValue("My next question");
 });
 
 test("the hero button lands in the assistant input", async ({ page }) => {

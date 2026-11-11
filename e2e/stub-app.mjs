@@ -22,9 +22,19 @@ createServer((req, res) => {
             res.writeHead(401).end();
             return;
         }
-        const call = JSON.parse(body);
+        let call;
+        try {
+            call = JSON.parse(body);
+        } catch {
+            res.writeHead(400).end();
+            return;
+        }
         if (call.kind === "confirm") {
             send(res, [{ type: "delta", text: "Thank you — your request is with the team." }, { type: "confirmed", email: "maria@example.com" }, { type: "done" }]);
+            return;
+        }
+        if (/slow/i.test(call.message)) {
+            setTimeout(() => send(res, [{ type: "delta", text: "A slow answer." }, { type: "done" }]), 3_000);
             return;
         }
         if (/demo/i.test(call.message)) {

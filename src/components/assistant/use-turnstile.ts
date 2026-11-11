@@ -14,13 +14,15 @@ declare global {
     }
 }
 
-const TOKEN_TIMEOUT_MS = 15_000;
+type Waiter = { resolve: (token: string) => void; reject: (error: Error) => void };
+
+const TOKEN_TIMEOUT_MS = 30_000;
 
 export function useTurnstile(siteKey: string) {
     const containerRef = useRef<HTMLDivElement>(null);
     const widgetId = useRef<string | null>(null);
     const token = useRef<string | null>(null);
-    const waiters = useRef<Array<(t: string) => void>>([]);
+    const waiters = useRef<Waiter[]>([]);
 
     const mount = useCallback(() => {
         if (!window.turnstile || !containerRef.current || widgetId.current) return;
@@ -29,10 +31,14 @@ export function useTurnstile(siteKey: string) {
             appearance: "interaction-only",
             callback: (t: string) => {
                 token.current = t;
-                waiters.current.splice(0).forEach((resolve) => resolve(t));
+                waiters.current.splice(0).forEach((w) => w.resolve(t));
             },
             "expired-callback": () => {
                 token.current = null;
+            },
+            "error-callback": () => {
+                token.current = null;
+                waiters.current.splice(0).forEach((w) => w.reject(new Error("turnstile error")));
             },
         });
     }, [siteKey]);
@@ -48,11 +54,21 @@ export function useTurnstile(siteKey: string) {
     const getToken = useCallback((): Promise<string> => {
         if (token.current) return Promise.resolve(token.current);
         return new Promise<string>((resolve, reject) => {
-            const timer = window.setTimeout(() => reject(new Error("turnstile timeout")), TOKEN_TIMEOUT_MS);
-            waiters.current.push((t) => {
-                window.clearTimeout(timer);
-                resolve(t);
-            });
+            const waiter: Waiter = {
+                resolve: (t) => {
+                    window.clearTimeout(timer);
+                    resolve(t);
+                },
+                reject: (error) => {
+                    window.clearTimeout(timer);
+                    reject(error);
+                },
+            };
+            const timer = window.setTimeout(() => {
+                waiters.current = waiters.current.filter((w) => w !== waiter);
+                reject(new Error("turnstile timeout"));
+            }, TOKEN_TIMEOUT_MS);
+            waiters.current.push(waiter);
         });
     }, []);
 

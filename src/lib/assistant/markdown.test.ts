@@ -21,6 +21,15 @@ describe("parseMarkdown", () => {
             },
         ]);
     });
+    it("splits an intro line and the list that follows it with no blank line", () => {
+        expect(parseMarkdown("Here's what it does:\n- A\n- B")).toEqual([
+            { kind: "p", inlines: [{ kind: "text", text: "Here's what it does:" }] },
+            { kind: "ul", items: [[{ kind: "text", text: "A" }], [{ kind: "text", text: "B" }]] },
+        ]);
+    });
+    it("keeps a closing line after a list as its own paragraph", () => {
+        expect(parseMarkdown("Intro\n- A\nOutro").map((b) => b.kind)).toEqual(["p", "ul", "p"]);
+    });
 });
 
 describe("safeHref", () => {
@@ -30,5 +39,13 @@ describe("safeHref", () => {
         expect(safeHref("javascript:alert(1)")).toBeNull();
         expect(safeHref("https://cellgenius-ai.com.evil.example/")).toBeNull();
         expect(safeHref("not a url")).toBeNull();
+    });
+    it("rejects user info and explicit ports", () => {
+        expect(safeHref("https://user:pass@cellgenius-ai.com/")).toBeNull();
+        expect(safeHref("https://evil.example@cellgenius-ai.com/")).toBeNull();
+        expect(safeHref("https://cellgenius-ai.com:8443/")).toBeNull();
+    });
+    it("accepts an uppercase host and normalises it", () => {
+        expect(safeHref("https://APP.CellGenius-AI.com/login")).toBe("https://app.cellgenius-ai.com/login");
     });
 });

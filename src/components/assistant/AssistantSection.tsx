@@ -19,6 +19,19 @@ const FALLBACK_TEXT: Record<FallbackReason, string> = {
 };
 
 export function AssistantSection({ nonce, enabled, siteKey }: { nonce?: string; enabled: boolean; siteKey: string }) {
+    if (!enabled || !siteKey) {
+        return (
+            <section id="assistant" className="mx-auto max-w-4xl scroll-mt-20 px-4 py-16 sm:px-6">
+                <p className="rounded-2xl border border-white/10 bg-ink-1/70 p-6 text-fg">
+                    Questions or a demo? Email{" "}
+                    <a id="assistant-contact" href={`mailto:${SITE.email}`} className="text-gold underline underline-offset-2">
+                        {SITE.email}
+                    </a>
+                    .
+                </p>
+            </section>
+        );
+    }
     return (
         <section id="assistant" aria-labelledby="assistant-title" className="mx-auto max-w-4xl scroll-mt-20 px-4 py-24 sm:px-6">
             <div className="mb-8 flex items-start gap-4 sm:items-center">
@@ -32,17 +45,7 @@ export function AssistantSection({ nonce, enabled, siteKey }: { nonce?: string; 
                     <p className="mt-1 text-muted">{ASSISTANT.tagline}</p>
                 </div>
             </div>
-            {enabled && siteKey ? (
-                <AssistantChat nonce={nonce} siteKey={siteKey} />
-            ) : (
-                <p className="rounded-2xl border border-white/10 bg-ink-1/70 p-6 text-fg">
-                    Questions or a demo? Email{" "}
-                    <a href={`mailto:${SITE.email}`} className="text-gold underline underline-offset-2">
-                        {SITE.email}
-                    </a>
-                    .
-                </p>
-            )}
+            <AssistantChat nonce={nonce} siteKey={siteKey} />
         </section>
     );
 }
@@ -61,14 +64,13 @@ function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: string }) 
     }, [assistant.messages, assistant.proposal, assistant.confirmedEmail, assistant.fallback, busy]);
 
     const submit = (text: string) => {
-        assistant.send(text);
-        setDraft("");
+        if (assistant.send(text)) setDraft("");
     };
 
     return (
         <div className="rounded-3xl border border-white/10 bg-ink-1/70 shadow-2xl backdrop-blur">
             <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" nonce={nonce} onReady={turnstile.mount} />
-            <div ref={log} role="log" aria-live="polite" aria-label="Conversation" className="max-h-[28rem] min-h-48 space-y-4 overflow-y-auto p-4 sm:p-6">
+            <div ref={log} role="log" aria-label="Conversation" aria-busy={assistant.status === "streaming"} className="max-h-[28rem] min-h-48 space-y-4 overflow-y-auto p-4 sm:p-6">
                 {assistant.messages.length === 0 ? (
                     <div className="flex flex-wrap gap-2">
                         {QUICK_STARTS.map((prompt) => (
@@ -76,7 +78,10 @@ function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: string }) 
                                 key={prompt}
                                 type="button"
                                 disabled={busy}
-                                onClick={() => submit(prompt)}
+                                onClick={() => {
+                                    submit(prompt);
+                                    input.current?.focus();
+                                }}
                                 className="rounded-full border border-peri/40 px-4 py-2 text-sm text-fg hover:border-peri hover:bg-peri/10 disabled:opacity-50"
                             >
                                 {prompt}
@@ -100,7 +105,10 @@ function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: string }) 
                     <RequestCard
                         proposal={assistant.proposal}
                         busy={busy}
-                        onConfirm={() => assistant.proposal && assistant.confirm(assistant.proposal.requestId)}
+                        onConfirm={() => {
+                            if (assistant.proposal) assistant.confirm(assistant.proposal.requestId);
+                            input.current?.focus();
+                        }}
                         onEdit={() => {
                             assistant.dismissProposal();
                             input.current?.focus();
@@ -108,8 +116,8 @@ function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: string }) 
                     />
                 ) : null}
                 {assistant.confirmedEmail ? (
-                    <p className="rounded-2xl border border-gold/40 p-4 text-fg">
-                        Sent. The team will reply to {assistant.confirmedEmail} within one working day.
+                    <p className="rounded-2xl border border-white/15 p-4 text-fg">
+                        Thanks — the team will reply to {assistant.confirmedEmail} within one working day.
                     </p>
                 ) : null}
                 {assistant.fallback ? <p className="rounded-2xl border border-white/15 p-4 text-fg">{FALLBACK_TEXT[assistant.fallback]}</p> : null}
@@ -135,7 +143,7 @@ function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: string }) 
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                                 e.preventDefault();
-                                submit(draft);
+                                if (!busy) submit(draft);
                             }
                         }}
                         placeholder="Ask about Changenius, or ask for a demo…"

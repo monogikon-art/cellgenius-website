@@ -39,20 +39,30 @@ export function useAssistant(getToken: () => Promise<string>, resetToken: () => 
     const [fallback, setFallback] = useState<FallbackReason | null>(null);
     const started = useRef(false);
 
-    const start = useCallback(async () => {
+    const start = useCallback(async (): Promise<FallbackReason | null> => {
         setStatus("verifying");
-        const token = await getToken();
-        const res = await post({ action: "start", turnstileToken: token });
-        resetToken();
-        if (!res.ok) throw new Error(`start ${res.status}`);
-        started.current = true;
+        try {
+            const res = await post({ action: "start", turnstileToken: await getToken() });
+            if (res.status === 429) return "limit";
+            if (!res.ok) return "unavailable";
+            started.current = true;
+            return null;
+        } finally {
+            resetToken();
+        }
     }, [getToken, resetToken]);
 
     const exchange = useCallback(
         async (body: Body): Promise<void> => {
             let res: Response | null = null;
             for (let attempt = 0; attempt < 2; attempt++) {
-                if (!started.current) await start();
+                if (!started.current) {
+                    const refused = await start();
+                    if (refused) {
+                        setFallback(refused);
+                        return;
+                    }
+                }
                 setStatus("streaming");
                 res = await post(body);
                 if (res.status !== 401) break;
@@ -64,15 +74,18 @@ export function useAssistant(getToken: () => Promise<string>, resetToken: () => 
             }
             const id = crypto.randomUUID();
             setMessages((m) => [...m, { id, role: "assistant", text: "" }]);
-            await readEvents(res.body, (event) => {
-                if (event.type === "delta") setMessages((m) => m.map((x) => (x.id === id ? { ...x, text: x.text + event.text } : x)));
-                else if (event.type === "proposal") setProposal(event.request);
-                else if (event.type === "confirmed") {
-                    setProposal(null);
-                    setConfirmedEmail(event.email);
-                } else if (event.type === "fallback") setFallback(event.reason);
-            });
-            setMessages((m) => m.filter((x) => !(x.id === id && x.text === "")));
+            try {
+                await readEvents(res.body, (event) => {
+                    if (event.type === "delta") setMessages((m) => m.map((x) => (x.id === id ? { ...x, text: x.text + event.text } : x)));
+                    else if (event.type === "proposal") setProposal(event.request);
+                    else if (event.type === "confirmed") {
+                        setProposal(null);
+                        setConfirmedEmail(event.email);
+                    } else if (event.type === "fallback") setFallback(event.reason);
+                });
+            } finally {
+                setMessages((m) => m.filter((x) => !(x.id === id && x.text === "")));
+            }
         },
         [start],
     );
@@ -92,11 +105,14 @@ export function useAssistant(getToken: () => Promise<string>, resetToken: () => 
     );
 
     const send = useCallback(
-        (text: string) => {
+        (text: string): boolean => {
             const message = text.trim();
-            if (!message || status !== "idle") return;
+            if (!message || status !== "idle") return false;
+            setProposal(null);
+            setConfirmedEmail(null);
             setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", text: message }]);
             void run({ action: "message", message });
+            return true;
         },
         [run, status],
     );

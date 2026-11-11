@@ -11,7 +11,10 @@ export function AskAssistantButton() {
             onClick={() => {
                 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
                 document.getElementById("assistant")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
-                window.setTimeout(() => document.getElementById("assistant-input")?.focus({ preventScroll: true }), reduce ? 0 : 600);
+                window.setTimeout(
+                    () => (document.getElementById("assistant-input") ?? document.getElementById("assistant-contact"))?.focus({ preventScroll: true }),
+                    reduce ? 0 : 600,
+                );
             }}
             className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 font-semibold text-ink-0 transition-colors hover:bg-gold-hi focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
         >
