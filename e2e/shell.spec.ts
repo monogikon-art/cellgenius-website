@@ -1,27 +1,25 @@
 import { expect, test } from "@playwright/test";
 
-test("header, sign-in panel and footer are in place", async ({ page }) => {
+test.beforeEach(async ({ page }) => {
+    await page.route((url) => url.pathname.startsWith("/media/"), (route) => route.fulfill({ status: 204 }));
+});
+
+test("no header banner; the sign-in panel and footer are in place", async ({ page }) => {
     await page.goto("/");
+    await expect(page.getByRole("banner")).toHaveCount(0);
+    await expect(page.getByRole("navigation")).toHaveCount(0);
     const signIn = page.getByRole("link", { name: "Sign in to Changenius" });
     await expect(signIn).toHaveAttribute("href", "https://app.cellgenius-ai.com/login");
     await expect(page.locator("input[type=password]")).toHaveCount(0);
     const footer = page.getByRole("contentinfo");
     await expect(footer.getByRole("img", { name: "Changenius" })).toBeVisible();
     await expect(footer).toContainText("by CellGenius");
-    await expect(page.getByRole("link", { name: "Skip to content" })).toHaveAttribute("href", "#main");
 });
 
-test("phone menu opens, lists the sections and closes on selection", async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== "phone", "phone menu only exists below sm");
+test("the page runs hero, assistant, sign-in, then films", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Open menu" }).click();
-    const menu = page.locator("#mobile-nav");
-    for (const name of ["Assistant", "Films", "Demos"]) {
-        await expect(menu.getByRole("link", { name })).toBeVisible();
-    }
-    await menu.getByRole("link", { name: "Films" }).click();
-    await expect(menu).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Open menu" })).toHaveAttribute("aria-expanded", "false");
+    const ids = await page.locator("main > section").evaluateAll((sections) => sections.map((s) => s.id || s.className.split(" ")[0]));
+    expect(ids).toEqual(["hero-show", "assistant", "signin", "films"]);
 });
 
 test("metadata names one canonical page for sharing", async ({ page }) => {

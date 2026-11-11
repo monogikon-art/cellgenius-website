@@ -23,7 +23,7 @@ test("the featured film opens in the viewer and Escape returns focus", async ({ 
 });
 
 test("a demo chapter offers the next chapter", async ({ page }) => {
-    await page.goto("/#demos");
+    await page.goto("/#films");
     await page.getByRole("button", { name: /Play 1\.1 The campus/ }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByRole("button", { name: "Next: 1.2 Strategy & OKR" }).click();
@@ -40,7 +40,7 @@ test("a demo chapter offers the next chapter", async ({ page }) => {
 });
 
 test("a chapter that ends moves on and keeps focus on the new video", async ({ page }) => {
-    await page.goto("/#demos");
+    await page.goto("/#films");
     await page.getByRole("button", { name: /Play 1\.1 The campus/ }).click();
     const dialog = page.getByRole("dialog");
     await dialog.locator("video").dispatchEvent("ended");
@@ -55,4 +55,18 @@ test("a poster that fails to load leaves the designed title card, not a broken i
     await expect(tile).toBeVisible();
     await expect(tile.locator("img")).toHaveCount(0);
     await expect(tile.getByText("The Changenius film", { exact: true })).toBeVisible();
+});
+
+test("the films run the 2-minute film, then the deeper look, then the executive demo, with no module commercials", async ({ page }) => {
+    await page.goto("/#films");
+    const films = page.locator("section#films");
+    const titles = await films.locator("h3").allTextContents();
+    expect(titles).toEqual(["A deeper look", "The executive demo"]);
+    const tiles = await films.getByRole("button", { name: /^Play / }).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")));
+    expect(tiles).toHaveLength(1 + 13 + 9);
+    expect(tiles[0]).toMatch(/^Play The Changenius film/);
+    expect(tiles[1]).toMatch(/^Play A deeper look: two changes, one bank/);
+    expect(tiles[14]).toMatch(/^Play 1\.1 The campus/);
+    await expect(page.locator("section#demos")).toHaveCount(0);
+    await expect(page.locator('[src*="/manual/"]')).toHaveCount(0);
 });

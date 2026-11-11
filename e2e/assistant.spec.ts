@@ -43,19 +43,9 @@ test("Enter while a reply is on its way keeps the draft", async ({ page }) => {
     await expect(input).toHaveValue("My next question");
 });
 
-test("the hero button lands in the assistant input", async ({ page }) => {
+test("with the assistant on, the section and footer name it", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Ask the EPMO AI Assistant" }).click();
-    await expect(page.locator("#assistant-input")).toBeFocused({ timeout: 3_000 });
-});
-
-test("with the assistant on, the header, hero and footer name it", async ({ page, isMobile }) => {
-    await page.goto("/");
-    if (isMobile) await page.getByRole("button", { name: "Open menu" }).click();
-    const nav = page.getByRole("navigation", { name: "Sections" });
-    await expect(nav.getByRole("link", { name: "Assistant" })).toHaveAttribute("href", "#assistant");
-    await expect(nav.getByRole("link", { name: "Contact" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Ask the EPMO AI Assistant" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ask the EPMO AI Assistant" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toContainText("The EPMO AI Assistant is AI.");
 });
 
@@ -77,9 +67,7 @@ test("Turnstile loads only once the visitor reaches the chat", async ({ page }) 
 
 test("a message sent before Turnstile is ready still gets its answer", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Ask the EPMO AI Assistant" }).click();
     const input = page.locator("#assistant-input");
-    await expect(input).toBeFocused({ timeout: 3_000 });
     await input.fill("What can Changenius do?");
     await input.press("Enter");
     await expect(page.getByRole("log", { name: "Conversation" }).getByText("one system")).toBeVisible({ timeout: 30_000 });

@@ -8,22 +8,15 @@ export const SITE = {
 
 export const NAME = "CHANGENIUS";
 
-export type BurstWord = { readonly word: string; readonly statement: string };
-
-export const INTRO_STATEMENT = "Meet Changenius.";
-
-export const BURST: readonly BurstWord[] = [
-    { word: "CHANGE", statement: "Every change in your organisation, governed in one place." },
-    { word: "AI", statement: "AI, grounded in your own policies." },
-    { word: "AGENTIC AI", statement: "Agentic AI prepares the work. People decide." },
-    { word: "CHAIN", statement: "One chain, from strategy to benefit." },
-    {
-        word: "GENIUS",
-        statement: "Built-in genius: native, embedded automation across every step. Late work escalates on its own.",
-    },
+export const HERO_STATEMENTS: readonly string[] = [
+    "Meet Changenius.",
+    "Every change in your organisation, governed in one place.",
+    "AI, grounded in your own policies.",
+    "Agentic AI prepares the work. People decide.",
+    "One chain, from strategy to benefit.",
+    "Built-in genius: native, embedded automation across every step. Late work escalates on its own.",
+    "The change is in us.",
 ];
-
-export const CLOSE: BurstWord = { word: "CHANGE IN US", statement: "The change is in us." };
 
 export type Film = { readonly title: string; readonly src: string; readonly poster?: string; readonly seconds?: number };
 
@@ -38,41 +31,9 @@ export const FEATURED_FILM: Film = {
     seconds: 113,
 };
 
-const MODULES = [
-    ["ai-agents", "AI agents"],
-    ["augmented-gate-workflow", "Augmented gate workflow"],
-    ["benefits-realization", "Benefits realisation"],
-    ["control-tower", "Control tower"],
-    ["financial-planning", "Financial planning"],
-    ["initiation-gates", "Initiation gates"],
-    ["project-delivery", "Project delivery"],
-    ["project-lifecycle", "Project lifecycle"],
-] as const;
-
-export const MODULE_COMMERCIALS: readonly Film[] = MODULES.map(([slug, title]) => ({
-    title,
-    src: media(`/manual/${slug}/commercial.mp4`),
-}));
-
 const chapter = (title: string, path: string, seconds: number): Film => ({ title, src: media(path), seconds });
 
 export const DEMO_GROUPS: readonly DemoGroup[] = [
-    {
-        id: "executive-demo",
-        title: "The executive demo",
-        lead: "Nine short chapters, from strategy to go-live.",
-        chapters: [
-            chapter("1.1 The campus", "/films/executive-demo-v3/01-campus.mp4", 94),
-            chapter("1.2 Strategy & OKR", "/films/executive-demo-v3/02-strategy.mp4", 231),
-            chapter("1.3 Registering a request", "/films/executive-demo-v2/03-request.mp4", 167),
-            chapter("1.4 Business requirements", "/films/executive-demo-v3/04-requirements.mp4", 172),
-            chapter("1.5 Benefits", "/films/executive-demo-v2/05-benefits.mp4", 169),
-            chapter("1.6 Deliverables, generated", "/films/executive-demo-v3/06-deliverables.mp4", 184),
-            chapter("1.7 Investment decision", "/films/executive-demo-v3/07-decision.mp4", 98),
-            chapter("1.8 Planning the delivery", "/films/executive-demo-v3/08-planning.mp4", 205),
-            chapter("1.9 Go-live, and after", "/films/executive-demo-v3/09-golive.mp4", 87),
-        ],
-    },
     {
         id: "deeper-look",
         title: "A deeper look",
@@ -91,6 +52,22 @@ export const DEMO_GROUPS: readonly DemoGroup[] = [
             chapter("10 The Knowledge Base", "/films/deeper-look-v3/10-knowledge-base.mp4", 120),
             chapter("11 The Enterprise Baseline", "/films/deeper-look-v3/11-enterprise-baseline.mp4", 119),
             chapter("12 Built for a regulated bank", "/films/deeper-look-v3/12-regulated-bank.mp4", 55),
+        ],
+    },
+    {
+        id: "executive-demo",
+        title: "The executive demo",
+        lead: "Nine short chapters, from strategy to go-live.",
+        chapters: [
+            chapter("1.1 The campus", "/films/executive-demo-v3/01-campus.mp4", 94),
+            chapter("1.2 Strategy & OKR", "/films/executive-demo-v3/02-strategy.mp4", 231),
+            chapter("1.3 Registering a request", "/films/executive-demo-v2/03-request.mp4", 167),
+            chapter("1.4 Business requirements", "/films/executive-demo-v3/04-requirements.mp4", 172),
+            chapter("1.5 Benefits", "/films/executive-demo-v2/05-benefits.mp4", 169),
+            chapter("1.6 Deliverables, generated", "/films/executive-demo-v3/06-deliverables.mp4", 184),
+            chapter("1.7 Investment decision", "/films/executive-demo-v3/07-decision.mp4", 98),
+            chapter("1.8 Planning the delivery", "/films/executive-demo-v3/08-planning.mp4", 205),
+            chapter("1.9 Go-live, and after", "/films/executive-demo-v3/09-golive.mp4", 87),
         ],
     },
 ];

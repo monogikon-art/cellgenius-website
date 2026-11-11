@@ -1,21 +1,22 @@
 "use client";
 
-import { DEMO_GROUPS } from "@/data/content";
+import { DEMO_GROUPS, FEATURED_FILM } from "@/data/content";
 import { SectionHeading } from "../SectionHeading";
 import { useFilmPlayer } from "./film-player";
 import { VideoTile } from "./VideoTile";
 
-export function DemosSection() {
+export function FilmsSection() {
     const { open } = useFilmPlayer();
     return (
-        <section id="demos" aria-labelledby="demos-title" className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+        <section id="films" aria-labelledby="films-title" className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
             <SectionHeading
-                id="demos-title"
-                eyebrow="Demos"
-                title="Walk through the platform"
-                lead="Real screens, chapter by chapter. Start anywhere."
+                id="films-title"
+                eyebrow="Films"
+                title="See Changenius in motion"
+                lead="Two minutes on the whole idea, then the platform chapter by chapter. Start anywhere."
             />
-            <div className="space-y-14">
+            <VideoTile film={FEATURED_FILM} size="lg" onPlay={() => open([FEATURED_FILM], 0)} />
+            <div className="mt-14 space-y-14">
                 {DEMO_GROUPS.map((group) => (
                     <div key={group.id} aria-labelledby={`${group.id}-title`} role="group">
                         <h3 id={`${group.id}-title`} className="text-xl font-semibold text-fg">

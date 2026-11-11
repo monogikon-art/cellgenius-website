@@ -1,20 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
-import { BURST, CLOSE } from "@/data/content";
-import { HeroActions } from "./HeroActions";
-import { useCycle, useInView, usePageVisible, usePrefersReducedMotion } from "./hooks";
-import { NameMorph } from "./NameMorph";
-import { OrbitStage } from "./OrbitStage";
+import { ChaingeIcon } from "../brand/changenius-icon";
+import { ChangeniusWordmarkShow } from "../brand/changenius-wordmark-show";
+import { useInView, usePageVisible, usePrefersReducedMotion } from "./hooks";
 import { StatementRotator } from "./StatementRotator";
-import { buildCycle, launchedCount, statementFor, type Phase } from "./timeline";
 
-const LABELS = BURST.map((b) => b.word);
-const STILL_PHASE: Phase = { kind: "intro" };
-const STILL_STEP_MS = 6000;
-
-export function HeroCinematic({ assistantOn }: { assistantOn: boolean }) {
+export function HeroCinematic() {
     const ref = useRef<HTMLElement>(null);
     const reduced = usePrefersReducedMotion();
     const inView = useInView(ref);
@@ -23,12 +16,27 @@ export function HeroCinematic({ assistantOn }: { assistantOn: boolean }) {
     const running = !paused && inView && visible;
 
     return (
-        <section ref={ref} aria-labelledby="hero-title" className="relative isolate flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden">
+        <section
+            ref={ref}
+            aria-labelledby="hero-title"
+            data-paused={running ? undefined : ""}
+            className="hero-show relative isolate flex min-h-dvh flex-col overflow-hidden"
+        >
             <h1 id="hero-title" className="sr-only">
                 Changenius — every change in your organisation, governed in one place
             </h1>
             <Backdrop reduced={reduced} running={running} />
-            {reduced ? <HeroStill paused={paused} assistantOn={assistantOn} /> : <HeroMotion running={running} assistantOn={assistantOn} />}
+            <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-4 pb-4 pt-6 sm:px-6">
+                <StatementRotator running={running} />
+                <div className="grid w-full flex-1 place-items-center">
+                    <div className="w-full max-w-md">
+                        <ChaingeIcon className="mx-auto mb-5 h-16 w-16 text-white" />
+                        <div className="text-center">
+                            <ChangeniusWordmarkShow />
+                        </div>
+                    </div>
+                </div>
+            </div>
             <button
                 type="button"
                 onClick={() => setPaused((p) => !p)}
@@ -38,57 +46,6 @@ export function HeroCinematic({ assistantOn }: { assistantOn: boolean }) {
                 {paused ? <Play aria-hidden="true" className="size-4" /> : <Pause aria-hidden="true" className="size-4" />}
             </button>
         </section>
-    );
-}
-
-function HeroLayout({ statement, stage, assistantOn }: { statement: string; stage: React.ReactNode; assistantOn: boolean }) {
-    return (
-        <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-4 pb-20 pt-12 sm:px-6">
-            <StatementRotator text={statement} />
-            <div className="relative grid w-full flex-1 place-items-center py-10">{stage}</div>
-            <HeroActions assistantOn={assistantOn} />
-        </div>
-    );
-}
-
-function HeroMotion({ running, assistantOn }: { running: boolean; assistantOn: boolean }) {
-    const steps = useMemo(() => buildCycle(BURST.length), []);
-    const step = useCycle(steps, running);
-    const word = useRef<HTMLDivElement>(null);
-    return (
-        <HeroLayout
-            assistantOn={assistantOn}
-            statement={statementFor(step.phase)}
-            stage={
-                <>
-                    <OrbitStage launched={launchedCount(step.phase, BURST.length)} running={running} labels={LABELS} avoid={word} />
-                    <NameMorph ref={word} phase={step.phase} running={running} />
-                </>
-            }
-        />
-    );
-}
-
-function HeroStill({ paused, assistantOn }: { paused: boolean; assistantOn: boolean }) {
-    const statements = useMemo(() => [...BURST.map((b) => b.statement), CLOSE.statement], []);
-    const [index, setIndex] = useState(0);
-    const word = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        if (paused) return;
-        const timer = window.setTimeout(() => setIndex((i) => (i + 1) % statements.length), STILL_STEP_MS);
-        return () => window.clearTimeout(timer);
-    }, [index, paused, statements.length]);
-    return (
-        <HeroLayout
-            assistantOn={assistantOn}
-            statement={statements[index]}
-            stage={
-                <>
-                    <OrbitStage launched={BURST.length} running={false} labels={LABELS} still avoid={word} />
-                    <NameMorph ref={word} phase={STILL_PHASE} running={false} />
-                </>
-            }
-        />
     );
 }
 

@@ -12,11 +12,10 @@ const AssistantChat = dynamic(() => import("./AssistantChat").then((m) => m.Assi
 export function AssistantSection({ nonce, enabled, siteKey }: { nonce?: string; enabled: boolean; siteKey: string }) {
     if (!enabled) {
         return (
-            <section id="assistant" className="mx-auto max-w-4xl scroll-mt-20 px-4 py-16 sm:px-6">
+            <section id="assistant" className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
                 <p className="rounded-2xl border border-white/10 bg-ink-1/70 p-6 text-fg">
                     Questions or a demo? Email{" "}
                     <a
-                        id="assistant-contact"
                         href={`mailto:${SITE.email}`}
                         className="text-gold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                     >
@@ -28,7 +27,7 @@ export function AssistantSection({ nonce, enabled, siteKey }: { nonce?: string; 
         );
     }
     return (
-        <section id="assistant" aria-labelledby="assistant-title" className="mx-auto max-w-4xl scroll-mt-20 px-4 py-24 sm:px-6">
+        <section id="assistant" aria-labelledby="assistant-title" className="mx-auto max-w-4xl px-4 py-24 sm:px-6">
             <div className="mb-8 flex items-start gap-4 sm:items-center">
                 <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-peri to-peri-deep text-white shadow-lg shadow-peri/30">
                     <Bot aria-hidden="true" className="size-6" />

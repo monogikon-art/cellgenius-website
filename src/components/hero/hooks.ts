@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore, type RefObject } from "react";
-import type { Step } from "./timeline";
 
 function subscribeReducedMotion(onChange: () => void) {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -38,12 +37,3 @@ export function useInView(ref: RefObject<Element | null>): boolean {
     return inView;
 }
 
-export function useCycle(steps: readonly Step[], running: boolean): Step {
-    const [index, setIndex] = useState(0);
-    useEffect(() => {
-        if (!running) return;
-        const timer = window.setTimeout(() => setIndex((i) => (i + 1) % steps.length), steps[index].ms);
-        return () => window.clearTimeout(timer);
-    }, [index, running, steps]);
-    return steps[index];
-}
