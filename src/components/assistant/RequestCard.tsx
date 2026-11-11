@@ -1,0 +1,47 @@
+import type { Proposal } from "@/lib/assistant/protocol";
+
+const TYPE_LABEL: Record<Proposal["type"], string> = {
+    demo: "Demo request",
+    information: "Information request",
+    contact: "Message to the team",
+};
+
+export function RequestCard({ proposal, busy, onConfirm, onEdit }: { proposal: Proposal; busy: boolean; onConfirm: () => void; onEdit: () => void }) {
+    const rows: Array<[string, string | undefined]> = [
+        ["Name", proposal.name],
+        ["Work email", proposal.email],
+        ["Company", proposal.company],
+        ["Role", proposal.role],
+        ["Preferred times", proposal.preferredTimes ? `${proposal.preferredTimes}${proposal.timezone ? ` (${proposal.timezone})` : ""}` : undefined],
+        ["Message", proposal.message || undefined],
+    ];
+    return (
+        <section aria-label={TYPE_LABEL[proposal.type]} className="rounded-2xl border border-gold/40 bg-ink-0/60 p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-gold">{TYPE_LABEL[proposal.type]}</h3>
+            <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[10rem_1fr]">
+                {rows
+                    .filter(([, value]) => value)
+                    .map(([label, value]) => (
+                        <div key={label} className="contents">
+                            <dt className="text-muted">{label}</dt>
+                            <dd className="mb-2 break-words text-fg sm:mb-0">{value}</dd>
+                        </div>
+                    ))}
+            </dl>
+            <p className="mt-4 text-xs text-muted">Nothing is sent until you press Confirm and send.</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                    type="button"
+                    disabled={busy}
+                    onClick={onConfirm}
+                    className="rounded-full bg-gold px-5 py-2 font-semibold text-ink-0 hover:bg-gold-hi disabled:opacity-50"
+                >
+                    Confirm and send
+                </button>
+                <button type="button" onClick={onEdit} className="rounded-full border border-white/20 px-5 py-2 text-fg hover:border-white/40 hover:bg-white/5">
+                    Edit
+                </button>
+            </div>
+        </section>
+    );
+}
