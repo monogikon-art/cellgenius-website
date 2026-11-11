@@ -14,6 +14,12 @@ test("the featured film opens in the viewer and Escape returns focus", async ({ 
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(tile).toBeFocused();
+
+    await tile.click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Close video" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(tile).toBeFocused();
 });
 
 test("a demo chapter offers the next chapter", async ({ page }) => {
@@ -22,4 +28,13 @@ test("a demo chapter offers the next chapter", async ({ page }) => {
     const dialog = page.getByRole("dialog");
     await dialog.getByRole("button", { name: "Next: 1.2 Strategy & OKR" }).click();
     await expect(dialog.getByRole("heading", { name: "1.2 Strategy & OKR" })).toBeVisible();
+    await expect(dialog.locator("video")).toHaveAttribute("src", "/media/films/executive-demo-v3/02-strategy.mp4");
+    await dialog.getByRole("button", { name: "Close video" }).click();
+    await expect(dialog).toBeHidden();
+
+    await page.getByRole("button", { name: /Play 1.8 Planning the delivery/ }).click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Next: 1.9 Go-live, and after" }).click();
+    await expect(dialog.getByRole("button", { name: /^Next:/ })).toHaveCount(0);
+    await expect(dialog.locator("video")).toBeFocused();
 });

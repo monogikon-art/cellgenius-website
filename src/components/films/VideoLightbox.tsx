@@ -14,6 +14,8 @@ type Props = {
 export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const returnFocus = useRef<HTMLElement | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const focusVideo = useRef(false);
     const film = index === null ? null : playlist[index];
     const next = index !== null && index < playlist.length - 1 ? index + 1 : null;
 
@@ -27,6 +29,13 @@ export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
         if (!film && dialog.open) dialog.close();
     }, [film]);
 
+    useEffect(() => {
+        if (focusVideo.current) {
+            focusVideo.current = false;
+            videoRef.current?.focus();
+        }
+    }, [film?.src]);
+
     return (
         <dialog
             ref={dialogRef}
@@ -35,7 +44,7 @@ export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
                 onClose();
                 returnFocus.current?.focus();
             }}
-            className="m-auto w-[min(1100px,94vw)] rounded-2xl border border-white/10 bg-ink-1 p-0 text-fg shadow-2xl backdrop:bg-ink-0/85 backdrop:backdrop-blur-sm"
+            className="m-auto w-[min(1100px,94vw)] max-h-[92dvh] overflow-y-auto rounded-2xl border border-white/10 bg-ink-1 p-0 text-fg shadow-2xl backdrop:bg-ink-0/85 backdrop:backdrop-blur-sm"
         >
             {film ? (
                 <div className="p-4 sm:p-6">
@@ -51,6 +60,7 @@ export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
                         </button>
                     </div>
                     <video
+                        ref={videoRef}
                         key={film.src}
                         src={film.src}
                         poster={film.poster}
@@ -65,7 +75,10 @@ export function VideoLightbox({ playlist, index, onClose, onIndex }: Props) {
                         <div className="mt-4 flex justify-end">
                             <button
                                 type="button"
-                                onClick={() => onIndex(next)}
+                                onClick={() => {
+                                    focusVideo.current = true;
+                                    onIndex(next);
+                                }}
                                 className="rounded-full border border-gold/60 px-4 py-2 text-sm font-semibold text-gold hover:bg-gold hover:text-ink-0"
                             >
                                 Next: {playlist[next].title}
