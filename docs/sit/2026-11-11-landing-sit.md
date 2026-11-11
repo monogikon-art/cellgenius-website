@@ -61,18 +61,18 @@ Three demo-tile readings at the very top of the screen came out as 1.0 because t
 
 ## Screenshots
 
-`docs/sit/2026-11-11-shots/`. Each file name starts with `desktop-` (1440×900) or `phone-` (390×844, Pixel 7). 1.9 MB in all.
+`docs/sit/2026-11-11-shots/`. Each file name starts with `desktop-` (1440×900) or `phone-` (390×844, Pixel 7). 2.0 MB in all.
 
 | File | Shows | Seen |
 |---|---|---|
-| `01-hero-mid-word` | "AGENTIC AI" while it morphs | OK. The CHANGE planet and its label cross the word (N3) |
-| `02-hero-close` | "CHANGE IN US" | OK. On phone, two labels are cut off at the left edge (N3) |
-| `03-hero-reduced-motion` | Still frame, all planets | OK |
+| `01-hero-mid-word` | "AGENTIC AI" while it morphs | OK. Retaken after the follow-up: the CHANGE label dims while it crosses the word |
+| `02-hero-close` | "CHANGE IN US" | OK. Retaken after the follow-up: on phone the labels stay inside the screen |
+| `03-hero-reduced-motion` | Still frame, all planets | OK. Retaken with the brighter labels and halo |
 | `04-assistant-empty` | Chips, message box, footnote | OK |
 | `05-assistant-answer` | Answer with an own-domain link | OK. The link to another domain is shown as plain text |
 | `06-assistant-request-card` | Demo request card | OK. On phone the card scrolls inside the conversation |
 | `07-assistant-sent` | Confirmation line | OK |
-| `08-films` | Film section | Poster missing locally, so the broken-image icon shows top-left (N4) |
+| `08-films` | Film section | OK. Retaken after the follow-up: the missing poster now leaves the designed title card |
 | `09-film-viewer` | Viewer dialog | Spinner only: no media locally |
 | `10-sign-in` | Sign-in panel | OK |
 | `11-demos` | Demo chapters | OK |
@@ -85,10 +85,10 @@ Three demo-tile readings at the very top of the screen came out as 1.0 because t
 
 | # | Finding | Severity | Status |
 |---|---|---|---|
-| N1 | With the assistant on, phone performance is 75 (target 85), because Turnstile loads with the page. Blocking it gives 91. | **Must fix before switch-on**; not a launch blocker (off = 98) | Open. Fix: load the Turnstile script only when the visitor reaches or starts using the assistant, and add a preconnect. This changes when a token is ready, so it needs its own change and tests rather than a quick edit here |
-| N2 | Hero planet labels (muted on the glow, or crossing the big word) fall to about 2:1 at worst. | Minor. The labels are `aria-hidden` decoration inside the animation, and the same words are in the statement text | Open, needs an owner decision: leave as is, brighten them to `fg`, or give them a dark text shadow |
-| N3 | Labels cross the big word on desktop too, not only on phone. On phone at the close, AGENTIC AI is off screen and AI is half cut at the left edge. | Cosmetic | Open |
-| N4 | If a film poster fails to load, Chrome shows its broken-image icon in the tile corner. | Minor. Here it happens only because there is no `MEDIA_BASE_URL`. In production it happens only if a poster is missing in R2 | Open. Could hide the image when it fails to load |
+| N1 | With the assistant on, phone performance is 75 (target 85), because Turnstile loads with the page. Blocking it gives 91. | **Must fix before switch-on**; not a launch blocker (off = 98) | **Fixed** in the follow-up below: 98 with the assistant on |
+| N2 | Hero planet labels (muted on the glow, or crossing the big word) fall to about 2:1 at worst. | Minor. The labels are `aria-hidden` decoration inside the animation, and the same words are in the statement text | **Fixed** in the follow-up below (owner chose: brighten and keep clear) |
+| N3 | Labels cross the big word on desktop too, not only on phone. On phone at the close, AGENTIC AI is off screen and AI is half cut at the left edge. | Cosmetic | **Fixed** in the follow-up below |
+| N4 | If a film poster fails to load, Chrome shows its broken-image icon in the tile corner. | Minor. Here it happens only because there is no `MEDIA_BASE_URL`. In production it happens only if a poster is missing in R2 | **Fixed** in the follow-up below |
 | N5 | The film duration over a very bright poster on phone measures 3.9–4.7:1. | Minor. Depends on the real poster, which was not available | Open. Check against the real poster on the Vercel preview |
 | N6 | Lighthouse's unscored rule "label-content-name-mismatch" flags the tiles. Their name is "Play X, 1:53" while the visible text is "X 1:53". | Minor (weight 0, accessibility score stays 100) | Open |
 | N7 | Right after the film viewer closed on phone, one screenshot showed the page a few pixels lower under the header. A fresh capture 1.5 s later was normal. | Observation | Not reproduced. Replaced with the clean shot |
@@ -116,6 +116,29 @@ Three demo-tile readings at the very top of the screen came out as 1.0 because t
 | Fix wave J | Auto-advance at the end of a film lost focus | `onEnded` keeps focus on the new video (e2e) |
 | Fix wave K | The phone keyboard popped up after a quick-start or Confirm | Focus goes to the conversation or confirmation line instead (e2e) |
 | Fix wave L | `.gitignore` gaps; stale comment in `icon.svg` | Fixed |
+
+## Follow-up fixes (owner decisions, 11 Nov 2026)
+
+Three changes the owner approved after reading this report. Tested on a production build with the assistant **on** (same environment as check 6: Turnstile test keys, app stub on port 3199, server on 3200).
+
+| Finding | Owner decision | What changed |
+|---|---|---|
+| N2, N3 planet labels | Brighten and keep clear | Labels are a little brighter (`#c8d0de`, between muted and `fg`, not gold) with a soft dark halo (SVG `paint-order: stroke`, ink at 60%, 0.24em). Each frame, a label that would run off the screen slides back inside it, and fades out once its planet has left the screen; a label crossing the big word fades to 25% opacity. Rings, planets, colours, timings and the reduced-motion still are unchanged |
+| N1 Turnstile weight | Load it on demand | The Turnstile script is rendered only once the chat panel comes within 100 px of the screen, or the visitor focuses or touches anything in it, whichever is first. A message sent before the token exists still waits for it (30 s limit, error → fallback). The margin is 100 px rather than ~400 px because the panel starts only about 200 px below a phone's first screen, so a wider margin would load Turnstile with the page again |
+| N4 broken poster | Hide it | If a poster fails to load, the image is removed and the tile's designed title card shows |
+
+**Lighthouse 12, mobile, production build, assistant on** (5 runs): performance **97, 98, 99, 98, 97 — median 98** (was 75), accessibility **100**. First paint 1.2 s (was 3.6–3.7 s), largest paint 2.2–2.3 s (was 4.6 s), blocking time 52–137 ms. No request to `challenges.cloudflare.com` during the load.
+
+**Planet label contrast** (same pixel method as above; the background under each letter now includes its halo):
+
+| Case | Desktop 1440×900 | Phone 390×844 |
+|---|---|---|
+| Every label placed by hand on the brightest spot of the glow, word hidden, full opacity | **5.8 worst pixel**, 5.9 median | **8.1 worst pixel**, 8.2 median |
+| In motion, 22 samples over about 2½ minutes, labels at full opacity | medians 10.8–12.4; 90% of pixels ≥ 6.7 | medians 9.1–10.5; 90% of pixels ≥ 8.1 |
+
+Before: desktop medians 2.2–7.7, phone 2.0–4.1. One phone sample had a single worst pixel of 2.3 (AGENTIC AI) and one of 4.7 (CHAIN), at a letter edge where a ring or planet sits under the halo; the 90% figure for both is above 8. Labels deliberately dimmed over the word (29 readings) are not counted: they are decoration fading out.
+
+**Checks after the follow-up:** `npm run typecheck` pass; `npm run lint` 0 errors (the same 2 warnings); Vitest **95 passed** (4 new, for the label placement); `npm run build` pass (`/` 24.7 kB, 127 kB First Load JS); Playwright **41 passed, 1 skipped**. New e2e: no Turnstile request until the chat is scrolled into view; a message sent before Turnstile is ready still gets its answer; a poster answering 404 leaves no image in the tile. Screenshots `01`–`03` and `08` (desktop and phone) retaken.
 
 ### Known minor items still open (from the reviews)
 
