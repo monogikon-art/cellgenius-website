@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
     openGraph: { title: "Changenius", description: "Every change in your organisation, governed in one place.", type: "website" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    await headers();
     return (
         <html lang="en" className={inter.variable}>
             <body className="min-h-dvh font-sans antialiased">{children}</body>
