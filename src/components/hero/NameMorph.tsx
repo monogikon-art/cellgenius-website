@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, type Ref } from "react";
 import { NAME } from "@/data/content";
 import { cn } from "@/lib/cn";
 import { planMorph } from "./morph";
@@ -9,7 +9,7 @@ import { TIMING, wordFor, type Phase } from "./timeline";
 const AI_LETTERS = new Set([2, 7]);
 const EASE_OUT = "cubic-bezier(0.2, 0.7, 0.2, 1)";
 
-export function NameMorph({ phase, running }: { phase: Phase; running: boolean }) {
+export function NameMorph({ phase, running, ref }: { phase: Phase; running: boolean; ref?: Ref<HTMLDivElement> }) {
     const nameRow = useRef<HTMLDivElement>(null);
     const wordRow = useRef<HTMLDivElement>(null);
     const word = wordFor(phase);
@@ -98,7 +98,7 @@ export function NameMorph({ phase, running }: { phase: Phase; running: boolean }
     }, [phase, plan, running]);
 
     return (
-        <div className="relative grid place-items-center" aria-hidden="true">
+        <div ref={ref} className="relative grid place-items-center" aria-hidden="true">
             {phase.kind === "intro" ? (
                 <p className="absolute -top-14 animate-meet text-sm font-semibold uppercase tracking-[0.6em] text-gold">Meet</p>
             ) : null}

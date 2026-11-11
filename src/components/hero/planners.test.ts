@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BURST, CLOSE, INTRO_STATEMENT, NAME } from "@/data/content";
 import { planMorph } from "./morph";
-import { ORBIT_FLATTEN, ORBIT_RADII, ORBIT_SCALE, angularSpeed, orbitPoint } from "./orbit";
+import { LABEL_OVER_WORD_OPACITY, ORBIT_FLATTEN, ORBIT_RADII, ORBIT_SCALE, angularSpeed, orbitPoint, placeLabel } from "./orbit";
 import { TIMING, buildCycle, launchedCount, statementFor, wordFor } from "./timeline";
 
 describe("planMorph", () => {
@@ -66,5 +66,33 @@ describe("orbit", () => {
         const top = orbitPoint(3, Math.PI / 2);
         expect(top.x).toBeCloseTo(0);
         expect(top.y).toBeCloseTo(3 * ORBIT_SCALE * ORBIT_FLATTEN);
+    });
+});
+
+describe("placeLabel", () => {
+    const edges = { left: 8, right: 382 };
+    const box = (left: number, width = 60, top = 100) => ({ left, right: left + width, top, bottom: top + 14 });
+
+    it("leaves a label that fits alone", () => {
+        expect(placeLabel(box(100), edges, null)).toEqual({ dx: 0, opacity: 1 });
+    });
+
+    it("slides a label back inside either edge", () => {
+        expect(placeLabel(box(-10), edges, null)).toEqual({ dx: 18, opacity: 1 });
+        expect(placeLabel(box(340), edges, null)).toEqual({ dx: -18, opacity: 1 });
+    });
+
+    it("fades a label out once its planet has left the screen", () => {
+        expect(placeLabel(box(-22), edges, null)).toEqual({ dx: 30, opacity: 1 });
+        expect(placeLabel(box(-34), edges, null)).toEqual({ dx: 42, opacity: 0.5 });
+        expect(placeLabel(box(-200), edges, null).opacity).toBe(0);
+    });
+
+    it("dims a label crossing the word, and only while it does", () => {
+        const word = { left: 150, right: 300, top: 90, bottom: 160 };
+        expect(placeLabel(box(170), edges, word).opacity).toBeCloseTo(LABEL_OVER_WORD_OPACITY);
+        expect(placeLabel(box(84), edges, word).opacity).toBe(1);
+        expect(placeLabel(box(96), edges, word).opacity).toBeCloseTo(1 - 0.75 * 0.5);
+        expect(placeLabel(box(170, 60, 200), edges, word).opacity).toBe(1);
     });
 });

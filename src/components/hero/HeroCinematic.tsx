@@ -54,14 +54,15 @@ function HeroLayout({ statement, stage, assistantOn }: { statement: string; stag
 function HeroMotion({ running, assistantOn }: { running: boolean; assistantOn: boolean }) {
     const steps = useMemo(() => buildCycle(BURST.length), []);
     const step = useCycle(steps, running);
+    const word = useRef<HTMLDivElement>(null);
     return (
         <HeroLayout
             assistantOn={assistantOn}
             statement={statementFor(step.phase)}
             stage={
                 <>
-                    <OrbitStage launched={launchedCount(step.phase, BURST.length)} running={running} labels={LABELS} />
-                    <NameMorph phase={step.phase} running={running} />
+                    <OrbitStage launched={launchedCount(step.phase, BURST.length)} running={running} labels={LABELS} avoid={word} />
+                    <NameMorph ref={word} phase={step.phase} running={running} />
                 </>
             }
         />
@@ -71,6 +72,7 @@ function HeroMotion({ running, assistantOn }: { running: boolean; assistantOn: b
 function HeroStill({ paused, assistantOn }: { paused: boolean; assistantOn: boolean }) {
     const statements = useMemo(() => [...BURST.map((b) => b.statement), CLOSE.statement], []);
     const [index, setIndex] = useState(0);
+    const word = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (paused) return;
         const timer = window.setTimeout(() => setIndex((i) => (i + 1) % statements.length), STILL_STEP_MS);
@@ -82,8 +84,8 @@ function HeroStill({ paused, assistantOn }: { paused: boolean; assistantOn: bool
             statement={statements[index]}
             stage={
                 <>
-                    <OrbitStage launched={BURST.length} running={false} labels={LABELS} still />
-                    <NameMorph phase={STILL_PHASE} running={false} />
+                    <OrbitStage launched={BURST.length} running={false} labels={LABELS} still avoid={word} />
+                    <NameMorph ref={word} phase={STILL_PHASE} running={false} />
                 </>
             }
         />
