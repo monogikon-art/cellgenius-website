@@ -212,9 +212,30 @@ Browser ──(1)── website POST /api/assistant ──(2, signed)── app 
 6. **Daily spend ceiling** (`WEBSITE_ASSISTANT_DAILY_USD`, default 5). Once it is reached, the endpoint
    stops calling the model and returns the email fallback until midnight UTC.
 
+**Cost controls (owner decisions, 2026-11-11).** Spend is counted in **real dollars**: tokens in and out
+multiplied by the model's price, read from the provider's usage figures. It is **not** a count of
+requests; the app's existing AI spend breaker counts rows and cannot be reused as it stands.
+- **Daily ceiling: $5.** Before each call, the endpoint reserves the call's worst-case cost: the input
+  tokens plus the maximum output, at list price. When today's spend plus that reservation would pass
+  the ceiling, it returns `fallback: "ceiling"`. The reservation is settled to the real cost afterwards.
+- **Per-conversation ceiling: $0.10.** Past it, that conversation gets the email fallback.
+- **Answer size:** at most 700 output tokens (about 500 words). Only the last 10 turns go to the model
+  as context. The product sheet and the rules use **prompt caching**, so each answer costs about half a
+  cent on the cheapest tier.
+- **Alerts:** an email to the owner when the day's spend first passes 80 % and then 100 % of the
+  ceiling, at most once each per day, through `src/lib/email.ts`.
+- **Hard backstop at the provider.** The website assistant uses **its own Anthropic API key**, created
+  by the owner in a separate Anthropic workspace with a **$50 monthly spend limit** set in the Anthropic
+  console. The key is stored as a separate platform-vault entry or a server-only `WEBSITE_ASSISTANT_*`
+  setting. The model is still chosen in AI Models & Keys, so no model is named in code. Even if every
+  check above failed, the provider refuses past $50 a month, and abuse of the website assistant can
+  never use the customers' AI key or its quota.
+- **Off switch:** unsetting `WEBSITE_ASSISTANT_SECRET` in the app, or setting
+  `NEXT_PUBLIC_ASSISTANT_ENABLED=false` on the website and redeploying, stops all calls.
+
 **Model.** `resolvePlatformTier()` / `buildProviderForAccount` on the platform vault, **cheapest
-tier**. No model is named in code. The call has a 30 s timeout. A provider failure gives the email
-fallback, never a raw error.
+tier**, called with the website assistant's own key from the cost controls above. No model is named in
+code. The call has a 30 s timeout. A provider failure gives the email fallback, never a raw error.
 
 **System prompt.** A fixed, versioned prompt with three parts:
 - **Persona:** the EPMO AI Assistant for Changenius, polite, plain English, short answers.
