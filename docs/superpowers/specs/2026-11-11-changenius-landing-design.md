@@ -126,8 +126,9 @@ periwinkle avatar tile like the app's.
   project-delivery and project-lifecycle. `project-lifecycle/commercial-testing.mp4` is excluded.
 - **The 60-second sales film** (`ppm-media/marketing/sales-film/changenius-60s-v2.mp4`) is not hosted
   yet. It is added only if the owner approves uploading it with the existing `publish-media` script.
-- **Posters:** each tile needs one. Where a module commercial has no hosted poster, the plan generates
-  one frame per video and hosts it next to the video.
+- **Posters:** only the featured film and the executive demo have hosted posters. Every other tile
+  shows a designed title card (ink gradient, gold play ring, title and duration) and loads nothing until
+  it is played. No new uploads.
 
 ### 4.4 Sign-in panel (`SignInPanel`)
 
@@ -140,10 +141,9 @@ Two groups of chapter tiles, with titles and durations taken from `ppm-app/src/l
 - **Executive demo:** chapters 1.1–1.9 under `/films/executive-demo-v2|v3/…`.
 - **A deeper look:** chapters 00–12 under `/films/deeper-look-v3/…`.
 
-**Bank-specific wording check (plan step).** Deeper Look v3 is the version the production login page
-already shows. Its chapter titles ("two changes, one bank", "Built for a regulated bank") speak about a
-bank in general and do not name NBB. The plan's first step checks that no chapter names NBB on screen;
-any chapter that does is left out.
+**Bank-specific wording (checked 2026-11-11).** Deeper Look v3 is the generic cut, told through an
+illustrative "National Bank", and the production sign-in page already shows it to the public. The
+NBB-dedicated cut ("Prepared for National Bank of Bahrain") is a separate master and is not used.
 
 ### 4.6 Video viewer and hosting
 
@@ -305,6 +305,7 @@ entry with no message text.
 | `WEBSITE_ASSISTANT_SECRET` | website **and** app | Generated. The same value in both Vercel projects |
 | `APP_ASSISTANT_URL` | website | `https://app.cellgenius-ai.com/api/public/website-assistant` |
 | `MEDIA_BASE_URL` | website | Same value as the app's `MANUAL_MEDIA_BASE_URL` |
+| `SITE_ORIGIN` | website | `https://cellgenius-ai.com`. The assistant route refuses any other `Origin` |
 | `NEXT_PUBLIC_ASSISTANT_ENABLED` | website | `true` only after the app release is live |
 | `WEBSITE_REQUESTS_TO`, `WEBSITE_ASSISTANT_DAILY_USD` | app | Defaults: `info@cellgenius-ai.com`, 5 |
 
