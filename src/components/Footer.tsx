@@ -9,7 +9,6 @@ export function Footer() {
                     <p className="text-base text-fg">
                         <Wordmark /> <span className="text-muted">by {SITE.company}</span>
                     </p>
-                    <p className="sr-only">Changenius by CellGenius</p>
                     <p className="mt-3">
                         <a href={`mailto:${SITE.email}`} className="hover:text-fg">
                             {SITE.email}

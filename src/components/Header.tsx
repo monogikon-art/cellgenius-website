@@ -1,11 +1,7 @@
 import { SITE } from "@/data/content";
+import { MobileNav } from "./MobileNav";
+import { NAV } from "./nav";
 import { Wordmark } from "./Wordmark";
-
-const NAV = [
-    { href: "#assistant", label: "Assistant" },
-    { href: "#films", label: "Films" },
-    { href: "#demos", label: "Demos" },
-];
 
 export function Header() {
     return (
@@ -27,12 +23,15 @@ export function Header() {
                         </a>
                     ))}
                 </nav>
-                <a
-                    href={SITE.appLoginUrl}
-                    className="rounded-full border border-gold/60 px-4 py-1.5 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink-0"
-                >
-                    Sign in
-                </a>
+                <div className="flex items-center gap-2">
+                    <MobileNav />
+                    <a
+                        href={SITE.appLoginUrl}
+                        className="rounded-full border border-gold/60 px-4 py-1.5 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink-0"
+                    >
+                        Sign in
+                    </a>
+                </div>
             </div>
         </header>
     );
