@@ -227,4 +227,29 @@ describe("hardening", () => {
     it("client ip is capped at 64 characters", () => {
         expect(clientIp(new Headers({ "x-real-ip": "1".repeat(200) }))).toHaveLength(64);
     });
+
+    it("env never throws on unparseable values and refuses non-origin forms", () => {
+        expect(readAssistantEnv({ ...goodEnv, APP_ASSISTANT_URL: "" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, SITE_ORIGIN: "nope" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, SITE_ORIGIN: "https://site.test/" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, SITE_ORIGIN: "https://u:p@site.test" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, SITE_ORIGIN: "https://SITE.test" })).toBeNull();
+        expect(readAssistantEnv({ ...goodEnv, APP_ASSISTANT_URL: "https://u:p@app.test/api/x" })).toBeNull();
+    });
+
+    it("splitter keeps a line of exactly MAX_LINE and drops an oversize tail at end of stream", async () => {
+        const run = async (chunks: string[]) => {
+            const out: string[] = [];
+            const source = new ReadableStream<string>({
+                start(c) {
+                    for (const ch of chunks) c.enqueue(ch);
+                    c.close();
+                },
+            });
+            await source.pipeThrough(createLineSplitter()).pipeTo(new WritableStream<string>({ write: (l) => void out.push(l) }));
+            return out;
+        };
+        expect(await run(["x".repeat(MAX_LINE) + "\n"])).toEqual(["x".repeat(MAX_LINE)]);
+        expect(await run(["x".repeat(MAX_LINE + 1)])).toEqual([]);
+    });
 });

@@ -1,6 +1,6 @@
 import { AppEventSchema, type AppEvent } from "./protocol";
 
-export const MAX_LINE = 16 * 1024;
+export const MAX_LINE = 32 * 1024;
 
 export function createLineSplitter(): TransformStream<string, string> {
     let buffer = "";
