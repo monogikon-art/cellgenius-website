@@ -47,3 +47,12 @@ test("a chapter that ends moves on and keeps focus on the new video", async ({ p
     await expect(dialog.getByRole("heading", { name: "1.2 Strategy & OKR" })).toBeVisible();
     await expect(dialog.locator("video")).toBeFocused();
 });
+
+test("a poster that fails to load leaves the designed title card, not a broken image", async ({ page }) => {
+    await page.route((url) => url.pathname.endsWith("-poster.jpg"), (route) => route.fulfill({ status: 404, body: "" }));
+    await page.goto("/#films");
+    const tile = page.getByRole("button", { name: /Play The Changenius film/ });
+    await expect(tile).toBeVisible();
+    await expect(tile.locator("img")).toHaveCount(0);
+    await expect(tile.getByText("The Changenius film", { exact: true })).toBeVisible();
+});

@@ -58,3 +58,29 @@ test("with the assistant on, the header, hero and footer name it", async ({ page
     await expect(page.getByRole("button", { name: "Ask the EPMO AI Assistant" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toContainText("The EPMO AI Assistant is AI.");
 });
+
+test("Turnstile loads only once the visitor reaches the chat", async ({ page }) => {
+    const turnstile: string[] = [];
+    page.on("request", (r) => {
+        if (r.url().includes("challenges.cloudflare.com")) turnstile.push(r.url());
+    });
+    await page.goto("/");
+    await expect(page.locator("#assistant-input")).toBeAttached();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1_000);
+    expect(turnstile).toEqual([]);
+
+    const loaded = page.waitForRequest((r) => r.url().includes("challenges.cloudflare.com"));
+    await page.getByRole("log", { name: "Conversation" }).scrollIntoViewIfNeeded();
+    await loaded;
+});
+
+test("a message sent before Turnstile is ready still gets its answer", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Ask the EPMO AI Assistant" }).click();
+    const input = page.locator("#assistant-input");
+    await expect(input).toBeFocused({ timeout: 3_000 });
+    await input.fill("What can Changenius do?");
+    await input.press("Enter");
+    await expect(page.getByRole("log", { name: "Conversation" }).getByText("one system")).toBeVisible({ timeout: 30_000 });
+});

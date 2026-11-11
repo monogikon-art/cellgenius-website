@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
 import type { Film } from "@/data/content";
@@ -5,6 +8,7 @@ import { cn } from "@/lib/cn";
 import { formatDuration } from "@/lib/format-duration";
 
 export function VideoTile({ film, onPlay, size = "md" }: { film: Film; onPlay: () => void; size?: "md" | "lg" }) {
+    const [posterFailed, setPosterFailed] = useState(false);
     return (
         <button
             type="button"
@@ -16,12 +20,13 @@ export function VideoTile({ film, onPlay, size = "md" }: { film: Film; onPlay: (
                 "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold",
             )}
         >
-            {film.poster ? (
+            {film.poster && !posterFailed ? (
                 <Image
                     src={film.poster}
                     alt=""
                     fill
                     unoptimized
+                    onError={() => setPosterFailed(true)}
                     sizes={size === "lg" ? "(min-width: 1152px) 1152px, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
                     className="object-cover opacity-80 transition-opacity group-hover:opacity-100"
                 />

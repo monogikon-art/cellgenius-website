@@ -21,6 +21,8 @@ const FALLBACK_TEXT: Record<FallbackReason, string> = {
 
 const AI_FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peri";
 const ACTION_FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold";
+// Small on purpose: the panel starts about 200px below a phone's first screen, so a wider margin would load Turnstile with the page.
+const TURNSTILE_ROOT_MARGIN = "0px 0px 100px 0px";
 
 export function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: string }) {
     const turnstile = useTurnstile(siteKey);
@@ -31,6 +33,20 @@ export function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: str
     const confirmation = useRef<HTMLParagraphElement>(null);
     const focusConfirmation = useRef(false);
     const busy = assistant.status !== "idle";
+    const panel = useRef<HTMLDivElement>(null);
+    const [wantTurnstile, setWantTurnstile] = useState(false);
+
+    // Turnstile costs a phone ~20 Lighthouse points on load, so it waits until the visitor reaches or touches the chat.
+    useEffect(() => {
+        const el = panel.current;
+        if (wantTurnstile || !el) return;
+        const observer = new IntersectionObserver((entries) => {
+            if (entries.some((e) => e.isIntersecting)) setWantTurnstile(true);
+        }, { rootMargin: TURNSTILE_ROOT_MARGIN });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [wantTurnstile]);
+    const loadTurnstile = () => setWantTurnstile(true);
 
     // Scroll the log itself, never the page: scrollIntoView would yank the visitor down from the hero on load.
     useEffect(() => {
@@ -52,8 +68,15 @@ export function AssistantChat({ nonce, siteKey }: { nonce?: string; siteKey: str
     const focusLog = () => log.current?.focus({ preventScroll: true });
 
     return (
-        <div className="rounded-3xl border border-white/10 bg-ink-1/70 shadow-2xl backdrop-blur">
-            <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" nonce={nonce} onReady={turnstile.mount} />
+        <div
+            ref={panel}
+            onFocus={loadTurnstile}
+            onPointerDown={loadTurnstile}
+            className="rounded-3xl border border-white/10 bg-ink-1/70 shadow-2xl backdrop-blur"
+        >
+            {wantTurnstile ? (
+                <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" nonce={nonce} onReady={turnstile.mount} />
+            ) : null}
             <div
                 ref={log}
                 role="log"
