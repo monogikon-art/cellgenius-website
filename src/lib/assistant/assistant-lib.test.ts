@@ -5,6 +5,7 @@ import { readAssistantEnv } from "./env";
 import { MAX_LINE, createLineSplitter, encodeEvent, filterEventStream, parseEventLine } from "./ndjson";
 import { AppEventSchema, ClientRequestSchema } from "./protocol";
 import { createTokenBucket } from "./rate-limit";
+import { guardEventStream } from "./relay-stream";
 import { sign, signedHeaders } from "./sign";
 import { TURNSTILE_VERIFY_URL, verifyTurnstile } from "./turnstile";
 
@@ -251,5 +252,33 @@ describe("hardening", () => {
         };
         expect(await run(["x".repeat(MAX_LINE) + "\n"])).toEqual(["x".repeat(MAX_LINE)]);
         expect(await run(["x".repeat(MAX_LINE + 1)])).toEqual([]);
+    });
+});
+
+describe("turnstile hostname", () => {
+    const answer = (body: object) => vi.fn().mockResolvedValueOnce(Response.json(body));
+
+    it("accepts a pass for the expected hostname only", async () => {
+        vi.stubGlobal("fetch", answer({ success: true, hostname: "site.test" }));
+        expect(await verifyTurnstile("tok", "sec", null, "site.test")).toBe(true);
+        vi.stubGlobal("fetch", answer({ success: true, hostname: "evil.test" }));
+        expect(await verifyTurnstile("tok", "sec", null, "site.test")).toBe(false);
+        vi.stubGlobal("fetch", answer({ success: true }));
+        expect(await verifyTurnstile("tok", "sec", null, "site.test")).toBe(false);
+    });
+
+    it("ignores the hostname when none is expected", async () => {
+        vi.stubGlobal("fetch", answer({ success: true, hostname: "localhost" }));
+        expect(await verifyTurnstile("tok", "sec", null)).toBe(true);
+    });
+});
+
+describe("guardEventStream deadline", () => {
+    it("ends a never-ending upstream with fallback and done once maxMs passes", async () => {
+        const never = new ReadableStream<Uint8Array>({ pull() {} });
+        const started = Date.now();
+        const text = await new Response(guardEventStream(never, 50)).text();
+        expect(text.trim().split("\n").map((l) => JSON.parse(l))).toEqual([{ type: "fallback", reason: "unavailable" }, { type: "done" }]);
+        expect(Date.now() - started).toBeLessThan(2_000);
     });
 });

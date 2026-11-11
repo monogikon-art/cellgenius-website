@@ -11,11 +11,12 @@ import { verifyTurnstile } from "@/lib/assistant/turnstile";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 const MAX_BODY_BYTES = 4096;
-const APP_HEADERS_TIMEOUT_MS = 35_000;
-const APP_BODY_TIMEOUT_MS = 90_000;
+const APP_HEADERS_TIMEOUT_MS = 25_000;
+// Measured from the request's arrival, so the fallback and done still go out inside maxDuration.
+const RESPONSE_DEADLINE_MS = 55_000;
 const NDJSON_HEADERS = { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store" };
 
 // Best effort only: each serverless instance has its own memory. The app's limits are the ones that count.
@@ -29,6 +30,10 @@ function fallback(reason: FallbackReason) {
     return new Response(encodeEvent({ type: "fallback", reason }) + encodeEvent({ type: "done" }), { status: 200, headers: NDJSON_HEADERS });
 }
 
+function discard(upstream: Response) {
+    upstream.body?.cancel().catch(() => {});
+}
+
 function readCookie(header: string | null, name: string): string | undefined {
     return header
         ?.split(";")
@@ -38,6 +43,8 @@ function readCookie(header: string | null, name: string): string | undefined {
 }
 
 export async function POST(request: Request): Promise<Response> {
+    const startedAt = Date.now();
+    if (process.env.NEXT_PUBLIC_ASSISTANT_ENABLED !== "true") return json(503, { error: "unavailable" });
     const env = readAssistantEnv();
     if (!env) return json(503, { error: "unavailable" });
 
@@ -63,7 +70,8 @@ export async function POST(request: Request): Promise<Response> {
     if (!allowed) return body.action === "start" ? json(429, { error: "limit" }) : fallback("limit");
 
     if (body.action === "start") {
-        if (!(await verifyTurnstile(body.turnstileToken, env.TURNSTILE_SECRET_KEY, ip))) return json(403, { error: "verification_failed" });
+        const expectedHostname = secure ? new URL(env.SITE_ORIGIN).hostname : undefined;
+        if (!(await verifyTurnstile(body.turnstileToken, env.TURNSTILE_SECRET_KEY, ip, expectedHostname))) return json(403, { error: "verification_failed" });
         const conversation = issueConversation(env.ASSISTANT_COOKIE_SECRET);
         return json(200, { ok: true }, { "set-cookie": cookieHeader(conversation.value, secure) });
     }
@@ -94,9 +102,15 @@ export async function POST(request: Request): Promise<Response> {
     } finally {
         clearTimeout(headersTimer);
     }
-    if (upstream.status === 429) return fallback("limit");
+    if (upstream.status === 429) {
+        discard(upstream);
+        return fallback("limit");
+    }
     const isNdjson = (upstream.headers.get("content-type") ?? "").toLowerCase().startsWith("application/x-ndjson");
-    if (upstream.status !== 200 || !upstream.body || !isNdjson) return fallback("unavailable");
+    if (upstream.status !== 200 || !upstream.body || !isNdjson) {
+        discard(upstream);
+        return fallback("unavailable");
+    }
 
-    return new Response(guardEventStream(upstream.body, APP_BODY_TIMEOUT_MS), { status: 200, headers: NDJSON_HEADERS });
+    return new Response(guardEventStream(upstream.body, startedAt + RESPONSE_DEADLINE_MS - Date.now()), { status: 200, headers: NDJSON_HEADERS });
 }

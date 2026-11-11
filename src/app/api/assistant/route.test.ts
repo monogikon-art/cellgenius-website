@@ -9,7 +9,9 @@ const ENV = {
     WEBSITE_ASSISTANT_SECRET: "w".repeat(32),
     APP_ASSISTANT_URL: "https://app.example.test/api/public/website-assistant",
     SITE_ORIGIN: "https://site.example.test",
+    NEXT_PUBLIC_ASSISTANT_ENABLED: "true",
 };
+const SITE_HOST = "site.example.test";
 
 const fetchMock = vi.fn();
 let POST: (req: Request) => Promise<Response>;
@@ -37,8 +39,10 @@ function req(body: unknown, init: { origin?: string; cookie?: string } = {}) {
 const ndjson = (lines: string[], status = 200) => new Response(`${lines.join("\n")}\n`, { status, headers: { "content-type": "application/x-ndjson" } });
 const events = async (res: Response) => (await res.text()).trim().split("\n").map((l) => JSON.parse(l));
 
+const passed = () => Response.json({ success: true, hostname: SITE_HOST });
+
 async function start(): Promise<string> {
-    fetchMock.mockResolvedValueOnce(Response.json({ success: true }));
+    fetchMock.mockResolvedValueOnce(passed());
     const res = await POST(req({ action: "start", turnstileToken: "tok" }));
     expect(res.status).toBe(200);
     return res.headers.get("set-cookie")!.split(";")[0];
@@ -59,7 +63,7 @@ describe("POST /api/assistant", () => {
     });
 
     it("issues a strict, HttpOnly, Secure cookie on start", async () => {
-        fetchMock.mockResolvedValueOnce(Response.json({ success: true }));
+        fetchMock.mockResolvedValueOnce(passed());
         const res = await POST(req({ action: "start", turnstileToken: "tok" }));
         const cookie = res.headers.get("set-cookie")!;
         expect(cookie).toMatch(/HttpOnly/);
@@ -270,5 +274,76 @@ describe("POST /api/assistant hardening", () => {
         expect(set).toMatch(/HttpOnly/);
         expect(set).toMatch(/SameSite=Strict/);
         expect(set).toMatch(/Secure/);
+    });
+});
+
+const cancellable = (status: number, headers: Record<string, string> = {}) => {
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({ pull() {}, cancel });
+    return { response: new Response(body, { status, headers }), cancel };
+};
+
+describe("POST /api/assistant limits and switches", () => {
+    it("keeps maxDuration within every Vercel plan", async () => {
+        expect((await import("./route")).maxDuration).toBe(60);
+    });
+
+    it("is off, with 503, whenever the public switch is not exactly true", async () => {
+        for (const value of ["false", "", "TRUE"]) {
+            vi.stubEnv("NEXT_PUBLIC_ASSISTANT_ENABLED", value);
+            const res = await POST(req({ action: "start", turnstileToken: "tok" }));
+            expect(res.status).toBe(503);
+            expect(await res.json()).toEqual({ error: "unavailable" });
+        }
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses a Turnstile pass issued for another hostname", async () => {
+        fetchMock.mockResolvedValueOnce(Response.json({ success: true, hostname: "evil.example" }));
+        const res = await POST(req({ action: "start", turnstileToken: "tok" }));
+        expect(res.status).toBe(403);
+        expect(res.headers.get("set-cookie")).toBeNull();
+    });
+
+    for (const [label, status, headers] of [
+        ["a 429", 429, { "content-type": "application/x-ndjson" }],
+        ["a 500", 500, { "content-type": "application/x-ndjson" }],
+        ["a redirect", 302, { location: "https://evil.example" }],
+        ["a non-ndjson 200", 200, { "content-type": "text/html" }],
+    ] as const) {
+        it(`cancels the unread upstream body on ${label}`, async () => {
+            const cookie = await start();
+            const { response, cancel } = cancellable(status, headers);
+            fetchMock.mockResolvedValueOnce(response);
+            const res = await POST(req({ action: "message", message: "hello" }, { cookie }));
+            expect((await events(res)).at(-1)).toEqual({ type: "done" });
+            expect(cancel).toHaveBeenCalled();
+        });
+    }
+
+    it("ends the whole response by 55 s after the request began, however long the headers took", async () => {
+        const cookie = await start();
+        vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+        try {
+            fetchMock.mockImplementationOnce(
+                () =>
+                    new Promise<Response>((resolve) =>
+                        setTimeout(() => resolve(new Response(new ReadableStream<Uint8Array>({ pull() {} }), { status: 200, headers: { "content-type": "application/x-ndjson" } })), 20_000),
+                    ),
+            );
+            let finished = false;
+            const pending = POST(req({ action: "message", message: "hello" }, { cookie })).then(async (res) => {
+                const out = await events(res);
+                finished = true;
+                return out;
+            });
+            await vi.advanceTimersByTimeAsync(54_900);
+            expect(finished).toBe(false);
+            await vi.advanceTimersByTimeAsync(200);
+            expect(finished).toBe(true);
+            expect(await pending).toEqual([{ type: "fallback", reason: "unavailable" }, { type: "done" }]);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });
