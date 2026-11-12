@@ -42,7 +42,14 @@ Sentence case, no closing full stop, as on the live site today.
 All five are drawn on one canvas stage, so each starts and ends cleanly and the sequence is one
 timeline. Each is about 40 seconds: a short arrival of the name, seven word beats of about 4.6 seconds
 (the word is traced or formed, rises, its caption holds, it fades), then the CHANGE IN US closure of
-about 5 seconds, then a short cross-fade into the next illustration. The full loop is about 3½ minutes.
+about 5 seconds, then the hand-over to the next illustration: there is no overlap; each scene dips to a
+quarter brightness at the boundary and the next one rises from the same quarter. The full loop is about
+3½ minutes.
+
+Sizes as built, on a 1920 by 1080 stage for computers and a 1080 by 1350 stage for phones, both scaled to
+fit: the name is 150 px (computer) and 124 px (phone), and every name or word is shrunk to fit within 92%
+of the stage width. The words are 150 to 300 px on a computer and 104 to 220 px on a phone, depending on
+the illustration and the word's length (AGENTIC AI is the smallest).
 
 1. **Golden circuit** (from the CEO film). CHANGENIUS sits low on the stage; for each word a gold
    circuit trace runs under the name and visits that word's letters in turn, each letter lights as the
@@ -50,7 +57,8 @@ about 5 seconds, then a short cross-fade into the next illustration. The full lo
    caption. Earlier words' traces stay as faint periwinkle lines. The film's thirteen-chapter route
    map is not used.
 2. **Particles** (from the CEO film). Light dust gathers into CHANGENIUS, then bursts and re-forms
-   into each word in turn, gold with a share of periwinkle, with the caption beneath.
+   into each word in turn, gold with a share of periwinkle, with the caption beneath. The dust itself
+   forms CHANGE IN US at the end; this illustration does not use the shared letter closure below.
 3. **Rising words** (today's show, redrawn). The name sits centred; for each word, copies of its
    letters lift out of the name and travel to form the word below, with the caption under it. Same
    colours as today: white letters, the A and I of AI in periwinkle, gold for the selected letters,
@@ -63,7 +71,7 @@ about 5 seconds, then a short cross-fade into the next illustration. The full lo
    its caption, and they accumulate; seven places in a ring instead of today's five. Then the name turns
    gold.
 
-**The closure, shared by all five:** the name's letters move to spell CHANGE IN US (CHANGE in white,
+**The closure, shared by four (all but Particles, whose dust forms it):** the name's letters move to spell CHANGE IN US (CHANGE in white,
 IN US in gold, the N and I swapping places as today), with "The change is in us" beneath, then the next
 illustration begins.
 
