@@ -5,6 +5,7 @@ import { circuit } from "./circuit";
 import { rising } from "./rising";
 import { particles } from "./particles";
 import { helix } from "./helix";
+import { orbit } from "./orbit";
 
 function stubDraw(a: DrawArgs) {
     const { g, frame, phase, font } = a;
@@ -21,4 +22,4 @@ function stubDraw(a: DrawArgs) {
 
 const stubs = Object.fromEntries(SCENES.map((id) => [id, { id, draw: stubDraw }])) as Record<SceneId, Scene>;
 
-export const SCENE_BY_ID: Record<SceneId, Scene> = { ...stubs, circuit, particles, rising, helix };
+export const SCENE_BY_ID: Record<SceneId, Scene> = { ...stubs, circuit, particles, rising, helix, orbit };
