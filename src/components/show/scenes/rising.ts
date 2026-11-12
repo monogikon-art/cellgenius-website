@@ -1,5 +1,6 @@
 import { WORDS } from "../copy";
 import {
+    C,
     NAME_WEIGHT,
     caption,
     centres,
@@ -74,8 +75,8 @@ function drawWord(a: DrawArgs, k: number, p: number) {
         drawSlot(g, s, x, y, f, alpha, flying > 0.02, grad);
     });
 
-    const capY = wy + b.size * 0.62 + 60;
-    caption(g, frame, font, WORDS[k].caption, capY, seg(p, 0.52, 0.62) * fo);
+    const capTop = wy + b.size / 2 + (frame.narrow ? 80 : 60);
+    caption(g, frame, font, WORDS[k].caption, capTop, seg(p, 0.52, 0.62) * fo, C.text, "top");
 }
 
 export const rising: Scene = {

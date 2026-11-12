@@ -1,4 +1,4 @@
-import { C, NAME_WEIGHT, centres, fontOf, setGlow, txt, type DrawArgs, type NameLayout } from "../kit";
+import { C, NAME_WEIGHT, centres, fontOf, restColor, setGlow, txt, type DrawArgs, type NameLayout } from "../kit";
 import { NAME, lettersOf } from "../letters";
 
 export const GOLD_GLOW = "rgba(212,175,106,.75)";
@@ -61,7 +61,6 @@ export function letter(
     g.font = f;
     g.textAlign = "center";
     g.textBaseline = "middle";
-    g.letterSpacing = "0px";
     setGlow(g, glow, blur);
     g.fillStyle = fill;
     g.fillText(ch, x, y);
@@ -73,8 +72,7 @@ export function drawName(a: DrawArgs, lay: NameLayout, gold: number[], goldAmt: 
     const f = fontOf(font, NAME_WEIGHT, lay.size);
     const xs = centres(g, NAME, f, lay.ls, frame.W / 2);
     [...NAME].forEach((ch, i) => {
-        const base = i === 2 || i === 7 ? C.ai : C.text;
-        txt(g, ch, xs[i], lay.y + dy, f, base, alpha);
+        txt(g, ch, xs[i], lay.y + dy, f, restColor(i), alpha);
         if (gold.includes(i) && goldAmt > 0) txt(g, ch, xs[i], lay.y + dy, f, C.goldHi, goldAmt * alpha, GOLD_GLOW, 18);
     });
 }

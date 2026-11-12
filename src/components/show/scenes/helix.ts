@@ -7,10 +7,12 @@ import {
     dot,
     drawClosure,
     ease,
+    fitWordSize,
     fontOf,
     holo,
     line,
     nameLayout,
+    restColor,
     seg,
     txt,
     type DrawArgs,
@@ -31,22 +33,8 @@ const order = Array.from({ length: N * 2 }, (_, i) => i);
 
 const geometry = (frame: Frame) =>
     frame.narrow
-        ? { x0: 120, x1: 960, amp: 170, cy: 860, size: 76, wordY: 360, wordSize: 120, agentic: 88, captionY: 500 }
-        : { x0: 260, x1: 1660, amp: 210, cy: 590, size: 96, wordY: 170, wordSize: 150, agentic: 150, captionY: 290 };
-
-function fitWordSize(a: DrawArgs, word: string, want: number) {
-    const { g, frame, font } = a;
-    const max = frame.W * 0.92;
-    let size = want;
-    g.save();
-    g.letterSpacing = "14px";
-    for (; size > 40; size -= 4) {
-        g.font = fontOf(font, 700, size);
-        if (g.measureText(word).width <= max) break;
-    }
-    g.restore();
-    return size;
-}
+        ? { x0: 120, x1: 960, amp: 170, cy: 860, size: 76, wordY: 360, wordSize: 120, agentic: 88 }
+        : { x0: 260, x1: 1660, amp: 210, cy: 590, size: 96, wordY: 170, wordSize: 150, agentic: 150 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -133,7 +121,7 @@ function drawHelix(a: DrawArgs, flat: number) {
         txt(g, NAME[i], itemX[k], itemY[k], f, "rgba(170,180,210,.85)", depth * arrive * (1 - l) * (1 - flat));
         txt(g, NAME[i], itemX[k], itemY[k], f, C.goldHi, depth * arrive * l, "rgba(240,210,154,.9)", 34);
         if (flat > 0) {
-            txt(g, NAME[i], itemX[k], itemY[k], fontOf(font, NAME_WEIGHT, size), i === 2 || i === 7 ? C.ai : C.text, flat);
+            txt(g, NAME[i], itemX[k], itemY[k], fontOf(font, NAME_WEIGHT, size), restColor(i), flat);
         }
     }
 }
@@ -143,10 +131,10 @@ function drawWordOverlay(a: DrawArgs, k: number, p: number) {
     const geo = geometry(frame);
     const word = WORDS[k].word;
     const fo = 1 - seg(p, 0.9, 1);
-    const size = fitWordSize(a, word, word === "AGENTIC AI" ? geo.agentic : geo.wordSize);
+    const size = fitWordSize(g, frame, font, word, word === "AGENTIC AI" ? geo.agentic : geo.wordSize);
     const rise = ease(seg(p, 0.4, 0.55));
     holo(g, frame, font, word, frame.W / 2, geo.wordY + (1 - rise) * 30, size, rise * fo);
-    caption(g, frame, font, WORDS[k].caption, geo.captionY, seg(p, 0.5, 0.62) * fo);
+    caption(g, frame, font, WORDS[k].caption, geo.wordY + size * 0.36 + (frame.narrow ? 64 : 50), seg(p, 0.5, 0.62) * fo, C.text, "top");
 }
 
 export const helix: Scene = {

@@ -18,8 +18,9 @@ export const C = {
     goldLo: "#c39a55",
     ai: "#818cf8",
     text: "#eef2f8",
-    muted: "#9aa6bd",
 };
+
+export const restColor = (i: number) => (i === 2 || i === 7 ? C.ai : C.text);
 
 export const pickFrame = (cssW: number, cssH: number): Frame => (cssW / cssH < 1.1 ? NARROW : WIDE);
 
@@ -51,7 +52,6 @@ export function txt(
     alpha = 1,
     glow?: string,
     blur = 30,
-    ls = 0,
 ) {
     if (alpha <= 0) return;
     g.save();
@@ -59,7 +59,6 @@ export function txt(
     g.font = f;
     g.textAlign = "center";
     g.textBaseline = "middle";
-    g.letterSpacing = `${ls}px`;
     if (glow) {
         setGlow(g, glow, blur);
     }
@@ -99,12 +98,20 @@ export function dot(g: Ctx, x: number, y: number, r: number, color: string, blur
     g.restore();
 }
 
-export function centres(g: Ctx, s: string, f: string, ls: number, cx: number) {
+function glyphWidths(g: Ctx, s: string, f: string) {
     g.save();
     g.font = f;
-    g.letterSpacing = "0px";
     const ws = [...s].map((ch) => g.measureText(ch).width);
     g.restore();
+    return ws;
+}
+
+export function runWidth(g: Ctx, s: string, f: string, ls: number) {
+    return glyphWidths(g, s, f).reduce((a, b) => a + b, 0) + ls * (s.length - 1);
+}
+
+export function centres(g: Ctx, s: string, f: string, ls: number, cx: number) {
+    const ws = glyphWidths(g, s, f);
     const total = ws.reduce((a, b) => a + b, 0) + ls * (s.length - 1);
     let x = cx - total / 2;
     return ws.map((w) => {
@@ -114,42 +121,58 @@ export function centres(g: Ctx, s: string, f: string, ls: number, cx: number) {
     });
 }
 
+const HOLO_LS = 14;
+
+export function fitWordSize(g: Ctx, frame: Frame, family: string, word: string, want: number) {
+    const max = frame.W * 0.92;
+    let size = want;
+    while (size > 40 && runWidth(g, word, fontOf(family, 700, size), HOLO_LS) > max) size -= 4;
+    return size;
+}
+
 let holoCanvas: HTMLCanvasElement | null = null;
+let holoBand: [number, number] | null = null;
+
 export function holo(g: Ctx, frame: Frame, family: string, s: string, x: number, y: number, size: number, alpha: number) {
     if (alpha <= 0) return;
     holoCanvas ??= document.createElement("canvas");
     if (holoCanvas.width !== frame.W || holoCanvas.height !== frame.H) {
         holoCanvas.width = frame.W;
         holoCanvas.height = frame.H;
+        holoBand = null;
     }
     const h = holoCanvas.getContext("2d")!;
     h.globalCompositeOperation = "source-over";
-    h.clearRect(0, 0, frame.W, frame.H);
-    h.font = fontOf(family, 700, size);
+    if (holoBand) h.clearRect(0, holoBand[0], frame.W, holoBand[1] - holoBand[0]);
+    const top = Math.max(0, Math.floor(y - size * 0.6));
+    const bottom = Math.min(frame.H, Math.ceil(y + size * 0.6));
+    holoBand = [top, bottom];
+    const f = fontOf(family, 700, size);
+    h.font = f;
     h.textAlign = "center";
     h.textBaseline = "middle";
-    h.letterSpacing = "14px";
     const gr = h.createLinearGradient(0, y - size / 2, 0, y + size / 2);
     gr.addColorStop(0, C.goldHi);
     gr.addColorStop(0.55, C.gold);
     gr.addColorStop(1, C.goldLo);
     h.fillStyle = gr;
-    h.fillText(s, x, y);
+    const xs = centres(h, s, f, HOLO_LS, x);
+    [...s].forEach((ch, i) => {
+        if (ch !== " ") h.fillText(ch, xs[i], y);
+    });
     h.globalCompositeOperation = "destination-out";
     h.fillStyle = "rgba(0,0,0,.28)";
     for (let yy = y - size / 2; yy < y + size / 2; yy += 7) h.fillRect(0, yy, frame.W, 2);
     g.save();
     g.globalAlpha *= alpha;
     setGlow(g, "rgba(240,210,154,.55)", 40);
-    g.drawImage(holoCanvas, 0, 0);
+    g.drawImage(holoCanvas, 0, top, frame.W, bottom - top, 0, top, frame.W, bottom - top);
     g.restore();
     g.save();
     g.globalAlpha *= alpha;
-    g.drawImage(holoCanvas, 0, 0);
+    g.drawImage(holoCanvas, 0, top, frame.W, bottom - top, 0, top, frame.W, bottom - top);
     g.restore();
 }
-
-export const captionY = (frame: Frame) => (frame.narrow ? 850 : 720);
 
 export function wrapLines(text: string, maxW: number, measure: (s: string) => number): string[] {
     const lines: string[] = [];
@@ -182,6 +205,16 @@ export function fitCaption(
     return { size: s, lines };
 }
 
+export function captionMeasurer(g: Ctx, family: string) {
+    return (t: string, size: number) => {
+        g.save();
+        g.font = fontOf(family, 500, size);
+        const w = g.measureText(t).width;
+        g.restore();
+        return w;
+    };
+}
+
 export function caption(
     g: Ctx,
     frame: Frame,
@@ -190,20 +223,13 @@ export function caption(
     y: number,
     alpha: number,
     color = C.text,
+    anchor: "middle" | "top" = "middle",
 ) {
     if (alpha <= 0) return;
-    const measureAt = (t: string, size: number) => {
-        g.save();
-        g.font = fontOf(family, 500, size);
-        g.letterSpacing = "0px";
-        const w = g.measureText(t).width;
-        g.restore();
-        return w;
-    };
-    const { size, lines } = fitCaption(text, frame.narrow ? 52 : 44, frame.W * 0.8, measureAt);
+    const { size, lines } = fitCaption(text, frame.narrow ? 52 : 44, frame.W * 0.8, captionMeasurer(g, family));
     const f = fontOf(family, 500, size);
     const lead = size * 1.25;
-    const top = y - ((lines.length - 1) * lead) / 2;
+    const top = anchor === "top" ? y : y - ((lines.length - 1) * lead) / 2;
     lines.forEach((l, i) => txt(g, l, frame.W / 2, top + i * lead, f, color, alpha, "rgba(7,11,22,.9)", 18));
 }
 
@@ -233,21 +259,13 @@ export function drawClosure(a: DrawArgs, p: number, from: NameLayout) {
         const x = rest[src] + (target[slot] - rest[src]) * glide;
         const ch = letters[src];
         const gold = slot >= 6;
-        const start = ch === "A" || src === 7 ? C.ai : C.text;
+        const start = restColor(src);
         if (gold) {
-            txt(g, ch, x, from.y, now, start, 1 - glide, undefined, 0, 0);
-            txt(g, ch, x, from.y, now, C.goldHi, glide, "rgba(212,175,106,.7)", 36, 0);
+            txt(g, ch, x, from.y, now, start, 1 - glide, undefined, 0);
+            txt(g, ch, x, from.y, now, C.goldHi, glide, "rgba(212,175,106,.7)", 36);
         } else {
-            txt(g, ch, x, from.y, now, start, 1, undefined, 0, 0);
+            txt(g, ch, x, from.y, now, start, 1, undefined, 0);
         }
     });
-    caption(g, frame, font, CLOSING_LINE, captionY(frame), ease(seg(p, 0.3, 0.5)), C.gold);
-}
-
-export function drawRestingName(a: DrawArgs, alpha = 1) {
-    const { g, frame, font } = a;
-    const { size, ls, y } = nameLayout(frame);
-    const f = fontOf(font, NAME_WEIGHT, size);
-    const xs = centres(g, "CHANGENIUS", f, ls, frame.W / 2);
-    [..."CHANGENIUS"].forEach((ch, i) => txt(g, ch, xs[i], y, f, i === 2 || i === 7 ? C.ai : C.text, alpha));
+    caption(g, frame, font, CLOSING_LINE, from.y + from.size * 0.9, ease(seg(p, 0.3, 0.5)), C.gold, "top");
 }

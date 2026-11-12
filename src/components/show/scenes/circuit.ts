@@ -7,10 +7,12 @@ import {
     dot,
     drawClosure,
     ease,
+    fitWordSize,
     fontOf,
     holo,
     line,
     nameLayout,
+    restColor,
     seg,
     txt,
     type DrawArgs,
@@ -74,20 +76,6 @@ function reachedAt(pts: number[][], base: number) {
     return marks;
 }
 
-function fitWordSize(a: DrawArgs, word: string, want: number) {
-    const { g, frame, font } = a;
-    const max = frame.W * 0.92;
-    let size = want;
-    g.save();
-    g.letterSpacing = "14px";
-    for (; size > 40; size -= 4) {
-        g.font = fontOf(font, 700, size);
-        if (g.measureText(word).width <= max) break;
-    }
-    g.restore();
-    return size;
-}
-
 function drawArrive(a: DrawArgs, p: number) {
     const { g, frame, font } = a;
     const lay = nameAt(frame);
@@ -128,7 +116,7 @@ function drawWord(a: DrawArgs, k: number, p: number) {
     });
     const stopSlot = slots.filter((_, n) => all[n] !== null);
 
-    const size = fitWordSize(a, word, frame.narrow ? (word === "AGENTIC AI" ? 104 : 170) : 220);
+    const size = fitWordSize(g, frame, font, word, frame.narrow ? (word === "AGENTIC AI" ? 104 : 170) : 220);
     const wy = wordY(frame);
     const wxs = centres(g, word, fontOf(font, 700, size), 14, frame.W / 2);
     const wordBottom = wy + size / 2;
@@ -173,7 +161,7 @@ function drawWord(a: DrawArgs, k: number, p: number) {
         } else {
             txt(g, ch, xs[i], lay.y, f, MUTED, keep);
         }
-        if (handOver > 0) txt(g, ch, xs[i], lay.y, f, i === 2 || i === 7 ? C.ai : C.text, handOver);
+        if (handOver > 0) txt(g, ch, xs[i], lay.y, f, restColor(i), handOver);
         if (on) {
             dot(g, xs[i], base, 9 * u, C.goldHi, 24, keep);
             dot(g, xs[i], base, 3.5 * u, "#fff", 0, keep);

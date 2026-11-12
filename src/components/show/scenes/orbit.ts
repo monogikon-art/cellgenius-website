@@ -2,6 +2,7 @@ import { WORDS } from "../copy";
 import {
     C,
     NAME_WEIGHT,
+    captionMeasurer,
     centres,
     drawClosure,
     ease,
@@ -66,15 +67,7 @@ function build(a: DrawArgs, k: number): Built {
     const size = frame.narrow ? 52 : 64;
     const ls = Math.round(size * 0.02);
     const xs = centres(g, WORDS[k].word, fontOf(font, NAME_WEIGHT, size), ls, cx);
-    const measureAt = (t: string, s: number) => {
-        g.save();
-        g.font = fontOf(font, 500, s);
-        g.letterSpacing = "0px";
-        const w = g.measureText(t).width;
-        g.restore();
-        return w;
-    };
-    const cap = fitCaption(WORDS[k].caption, frame.narrow ? 30 : 28, frame.narrow ? 460 : 400, measureAt, 3, frame.narrow ? 28 : 26);
+    const cap = fitCaption(WORDS[k].caption, frame.narrow ? 30 : 28, frame.narrow ? 460 : 400, captionMeasurer(g, font), 3, frame.narrow ? 28 : 26);
     const built: Built = {
         size,
         slots: slotsOf(WORDS[k].word, xs),
@@ -154,7 +147,7 @@ export const orbit: Scene = {
             const fade = 1 - seg(p, 0, 0.25);
             if (fade > 0) for (let j = 0; j < WORDS.length; j++) drawPlaced(a, j, fade);
             drawClosure(a, seg(p, 0.2, 1), lay);
-            drawGoldName(a, lay, seg(p, 0, 0.15) * (1 - seg(p, 0.2, 0.32)));
+            drawGoldName(a, lay, seg(p, 0, 0.15) * (1 - seg(p, 0.15, 0.2)));
         }
     },
 };

@@ -3,11 +3,13 @@ import {
     C,
     NAME_WEIGHT,
     caption,
+    centres,
     clamp,
     ease,
     fontOf,
     nameLayout,
     rng,
+    runWidth,
     seg,
     type Frame,
     type Scene,
@@ -67,17 +69,16 @@ function buildCloud(frame: Frame, font: string): Cloud {
 
     const sample = (s: string, weight: number, size: number, ls: number, y: number) => {
         h.clearRect(0, 0, W, H);
-        h.font = fontOf(font, weight, size);
-        h.letterSpacing = `${ls}px`;
-        const fit = Math.min(1, (W * 0.9) / h.measureText(s).width);
-        if (fit < 1) {
-            h.font = fontOf(font, weight, size * fit);
-            h.letterSpacing = `${ls * fit}px`;
-        }
+        const fit = Math.min(1, (W * 0.9) / runWidth(h, s, fontOf(font, weight, size), ls));
+        const f = fontOf(font, weight, size * fit);
+        h.font = f;
         h.fillStyle = "#fff";
         h.textAlign = "center";
         h.textBaseline = "middle";
-        h.fillText(s, W / 2 + (ls * fit) / 2, y);
+        const xs = centres(h, s, f, ls * fit, W / 2);
+        [...s].forEach((ch, i) => {
+            if (ch !== " ") h.fillText(ch, xs[i], y);
+        });
         const top = Math.max(0, Math.floor(y - size));
         const bottom = Math.min(H, Math.ceil(y + size));
         const d = h.getImageData(0, top, W, bottom - top).data;
@@ -228,7 +229,8 @@ export const particles: Scene = {
             const alpha = seg(phase.p, 0.5, 0.62) * (1 - seg(phase.p, 0.9, 1));
             caption(g, frame, font, WORDS[phase.k].caption, captionAt(frame), alpha);
         } else if (phase.kind === "closure") {
-            caption(g, frame, font, CLOSING_LINE, captionAt(frame), ease(seg(phase.p, 0.5, 0.65)), C.gold);
+            const lay = nameLayout(frame);
+            caption(g, frame, font, CLOSING_LINE, lay.y + lay.size * 0.9, ease(seg(phase.p, 0.5, 0.65)), C.gold, "top");
         }
     },
 };

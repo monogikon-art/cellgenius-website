@@ -62,6 +62,24 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
         let band = 0;
         let shown: SceneId | null = null;
         const prepared = new Map<SceneId, Frame>();
+        let warmTimer = 0;
+        const hasIdle = typeof requestIdleCallback === "function";
+
+        root.style.setProperty("--show-h", `${bandHeight()}px`);
+
+        const warm = () => {
+            warmTimer = 0;
+            if (cancelled || !family) return;
+            const next = SCENES.find((id) => prepared.get(id) !== frame);
+            if (!next) return;
+            SCENE_BY_ID[next].prepare?.(frame, family);
+            prepared.set(next, frame);
+            scheduleWarm();
+        };
+        const scheduleWarm = () => {
+            if (warmTimer || cancelled) return;
+            warmTimer = hasIdle ? requestIdleCallback(warm, { timeout: 3000 }) : window.setTimeout(warm, 200);
+        };
 
         const render = (report: boolean) => {
             const { id, t, alpha } = sceneAt(seconds);
@@ -101,6 +119,7 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
             offY = (band - frame.H * scale) / 2;
             prepared.clear();
             if (!raf) render(true);
+            scheduleWarm();
         };
 
         const tick = (now: number) => {
@@ -136,12 +155,17 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
             ro.observe(root);
             render(true);
             if (runningRef.current) resumeRef.current();
+            scheduleWarm();
         });
 
         return () => {
             cancelled = true;
             resumeRef.current = () => undefined;
             if (raf) cancelAnimationFrame(raf);
+            if (warmTimer) {
+                if (hasIdle) cancelIdleCallback(warmTimer);
+                else clearTimeout(warmTimer);
+            }
             ro.disconnect();
             document.removeEventListener("visibilitychange", onVisible);
             window.removeEventListener("resize", onResize);
