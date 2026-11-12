@@ -10,7 +10,7 @@ test("the featured film opens in the viewer and Escape returns focus", async ({ 
     await tile.click();
     const dialog = page.getByRole("dialog", { name: "The Changenius film" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator("video")).toHaveAttribute("src", "/media/films/changenius-film-2min-v1.mp4");
+    await expect(dialog.locator("video")).toHaveAttribute("src", "/media/films/changenius-film-exec-v1.mp4");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(tile).toBeFocused();
@@ -57,7 +57,7 @@ test("a poster that fails to load leaves the designed title card, not a broken i
     await expect(tile.getByText("The Changenius film", { exact: true })).toBeVisible();
 });
 
-test("the films run the 2-minute film, then the deeper look, then the executive demo, with no module commercials", async ({ page }) => {
+test("the films run the main film, then the deeper look, then the executive demo, with no module commercials", async ({ page }) => {
     await page.goto("/#films");
     const films = page.locator("section#films");
     const titles = await films.locator("h3").allTextContents();
