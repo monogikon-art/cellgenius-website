@@ -165,10 +165,17 @@ export function wrapLines(text: string, maxW: number, measure: (s: string) => nu
     return lines;
 }
 
-export function fitCaption(text: string, size: number, maxW: number, measureAt: (s: string, size: number) => number) {
+export function fitCaption(
+    text: string,
+    size: number,
+    maxW: number,
+    measureAt: (s: string, size: number) => number,
+    maxLines = 2,
+    floor = 20,
+) {
     let s = size;
     let lines = wrapLines(text, maxW, (t) => measureAt(t, s));
-    while (lines.length > 2 && s > 20) {
+    while (lines.length > maxLines && s > floor) {
         s -= 2;
         lines = wrapLines(text, maxW, (t) => measureAt(t, s));
     }

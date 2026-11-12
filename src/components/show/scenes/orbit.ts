@@ -20,22 +20,22 @@ import { GOLD_GLOW, drawName, drawSlot, sheen, slotsOf, type Slot } from "./word
 
 const PLACES: Record<"wide" | "narrow", [number, number][]> = {
     wide: [
-        [380, 190],
-        [960, 190],
-        [1540, 190],
-        [1540, 880],
-        [960, 880],
-        [380, 880],
-        [215, 540],
+        [330, 210],
+        [750, 210],
+        [1170, 210],
+        [1590, 210],
+        [540, 810],
+        [960, 810],
+        [1380, 810],
     ],
     narrow: [
-        [290, 230],
-        [790, 230],
-        [290, 430],
-        [790, 430],
-        [290, 960],
-        [790, 960],
-        [540, 1170],
+        [290, 150],
+        [790, 150],
+        [290, 390],
+        [790, 390],
+        [290, 830],
+        [790, 830],
+        [540, 1070],
     ],
 };
 
@@ -74,7 +74,7 @@ function build(a: DrawArgs, k: number): Built {
         g.restore();
         return w;
     };
-    const cap = fitCaption(WORDS[k].caption, frame.narrow ? 30 : 28, frame.narrow ? 460 : 420, measureAt);
+    const cap = fitCaption(WORDS[k].caption, frame.narrow ? 30 : 28, frame.narrow ? 460 : 400, measureAt, 3, frame.narrow ? 28 : 26);
     const built: Built = {
         size,
         slots: slotsOf(WORDS[k].word, xs),
