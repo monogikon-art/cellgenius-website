@@ -32,7 +32,7 @@ const order = Array.from({ length: N * 2 }, (_, i) => i);
 const geometry = (frame: Frame) =>
     frame.narrow
         ? { x0: 120, x1: 960, amp: 170, cy: 860, size: 76, wordY: 360, wordSize: 120, agentic: 88, captionY: 500 }
-        : { x0: 260, x1: 1660, amp: 210, cy: 560, size: 96, wordY: 170, wordSize: 150, agentic: 150, captionY: 290 };
+        : { x0: 260, x1: 1660, amp: 210, cy: 590, size: 96, wordY: 170, wordSize: 150, agentic: 150, captionY: 290 };
 
 function fitWordSize(a: DrawArgs, word: string, want: number) {
     const { g, frame, font } = a;
