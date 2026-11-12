@@ -1,6 +1,8 @@
+import { cn } from "@/lib/cn";
+
 export function ChangeniusMark3D({ className }: { className?: string }) {
     return (
-        <div aria-hidden="true" className={`mark-3d size-[72px] sm:size-24${className ? ` ${className}` : ""}`}>
+        <div aria-hidden="true" className={cn("mark-3d size-[72px] sm:size-24", className)}>
             <div className="mark-3d-tilt">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
