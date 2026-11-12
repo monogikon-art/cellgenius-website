@@ -21,8 +21,8 @@ export function Footer({ assistantOn }: { assistantOn: boolean }) {
                 <div className="space-y-3">
                     {assistantOn ? (
                         <p>
-                            The EPMO AI Assistant is AI. Details you share to arrange a demo or a reply are emailed to the
-                            Changenius team, kept for 12 months and then deleted.
+                            The EPMO AI Assistant is AI. Details you share to arrange a demo or a reply are sent to the
+                            Changenius team by email and WhatsApp (Meta), kept for 12 months and then deleted.
                         </p>
                     ) : null}
                     <p>© {new Date().getFullYear()} {SITE.company}. All rights reserved.</p>

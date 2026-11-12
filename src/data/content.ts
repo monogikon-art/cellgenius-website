@@ -68,5 +68,5 @@ export const ASSISTANT = {
     name: "EPMO AI Assistant",
     tagline: "Ask anything about Changenius — or let me arrange a demo, send you information or pass a message to the team.",
     consent:
-        "This assistant is AI. Don't share sensitive information. Details you give to arrange a demo or a reply are emailed to the Changenius team and kept for 12 months.",
+        "This assistant is AI. Don't share sensitive information. Details you give to arrange a demo or a reply are sent to the Changenius team by email and WhatsApp (Meta) and kept for 12 months.",
 } as const;
