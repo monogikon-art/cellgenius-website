@@ -12,8 +12,11 @@ import {
     holo,
     line,
     nameLayout,
+    REST_DIM,
+    SOURCE_GLOW,
     restColor,
     seg,
+    sourceLetter,
     txt,
     type DrawArgs,
     type Frame,
@@ -21,8 +24,6 @@ import {
     type Scene,
 } from "../kit";
 import { NAME, lettersOf } from "../letters";
-
-const MUTED = "rgba(154,166,189,.55)";
 
 const nameAt = (frame: Frame): NameLayout => {
     return { ...nameLayout(frame), y: frame.narrow ? 900 : 700 };
@@ -85,7 +86,7 @@ function drawArrive(a: DrawArgs, p: number) {
         const al = ease(seg(p, i * 0.05, i * 0.05 + 0.45));
         const glint = Math.max(0, 1 - Math.abs(p * 13 - 1.5 - i));
         const hot = glint > 0.2;
-        txt(g, ch, xs[i], lay.y + (1 - al) * 18, f, hot ? C.goldHi : MUTED, al, hot ? "rgba(240,210,154,.8)" : undefined, 30 * glint);
+        txt(g, ch, xs[i], lay.y + (1 - al) * 18, f, hot ? C.goldHi : restColor(i), al * (hot ? 1 : REST_DIM), hot ? SOURCE_GLOW : undefined, 30 * glint);
     });
 }
 
@@ -157,9 +158,9 @@ function drawWord(a: DrawArgs, k: number, p: number) {
         const n = stops.indexOf(i);
         const on = n >= 0 && lit[n];
         if (on) {
-            txt(g, ch, xs[i], lay.y, f, C.goldHi, keep, "rgba(240,210,154,.9)", 36);
+            sourceLetter(g, ch, xs[i], lay.y, f, keep);
         } else {
-            txt(g, ch, xs[i], lay.y, f, MUTED, keep);
+            txt(g, ch, xs[i], lay.y, f, restColor(i), keep * REST_DIM);
         }
         if (handOver > 0) txt(g, ch, xs[i], lay.y, f, restColor(i), handOver);
         if (on) {

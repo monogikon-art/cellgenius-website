@@ -15,7 +15,7 @@ import {
     type Scene,
 } from "../kit";
 import { NAME } from "../letters";
-import { drawName, drawSlot, sheen, slotsOf, type Slot } from "./word-style";
+import { drawName, drawSlot, slotsOf, type Slot } from "./word-style";
 
 const nameAt = (frame: Frame): NameLayout => {
     const lay = nameLayout(frame);
@@ -23,7 +23,7 @@ const nameAt = (frame: Frame): NameLayout => {
 };
 const wordY = (frame: Frame) => (frame.narrow ? 820 : 640);
 
-type Built = { size: number; slots: Slot[]; left: number; span: number };
+type Built = { size: number; slots: Slot[] };
 
 const cache = new Map<string, Built>();
 
@@ -39,13 +39,13 @@ function build(a: DrawArgs, k: number): Built {
     const size = want * fit;
     const xs = centres(g, word, fontOf(font, NAME_WEIGHT, size), Math.round(want * 0.02) * fit, frame.W / 2);
     const slots = slotsOf(word, xs);
-    const built = { size, slots, left: xs[0] - size * 0.4, span: xs[xs.length - 1] - xs[0] + size * 0.8 };
+    const built = { size, slots };
     cache.set(key, built);
     return built;
 }
 
 function drawWord(a: DrawArgs, k: number, p: number) {
-    const { g, frame, font, t } = a;
+    const { g, frame, font } = a;
     const lay = nameAt(frame);
     const b = build(a, k);
     const gold = b.slots.flatMap((s) => (s.src === null ? [] : [s.src]));
@@ -58,7 +58,6 @@ function drawWord(a: DrawArgs, k: number, p: number) {
     const wy = wordY(frame);
     const count = b.slots.length;
     const dur = Math.min(0.3, 0.45 - 0.03 * (count - 1));
-    const grad = b.slots.some((s) => s.kind === "sheen") ? sheen(g, b.left, b.span, t) : null;
 
     b.slots.forEach((s, n) => {
         const start = 0.05 + 0.03 * n;
@@ -70,9 +69,7 @@ function drawWord(a: DrawArgs, k: number, p: number) {
         const y = sy + (wy - sy) * e;
         const size = guest ? b.size : lay.size + (b.size - lay.size) * e;
         const alpha = (guest ? seg(p, start, start + 0.06) : seg(p, start, start + 0.05)) * fo;
-        const flying = 1 - e;
-        const f = fontOf(font, NAME_WEIGHT, size);
-        drawSlot(g, s, x, y, f, alpha, flying > 0.02, grad);
+        drawSlot(g, font, s, x, y, b.size, size, alpha);
     });
 
     const capTop = wy + b.size / 2 + (frame.narrow ? 80 : 60);

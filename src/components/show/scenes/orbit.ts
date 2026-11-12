@@ -10,6 +10,7 @@ import {
     fontOf,
     nameLayout,
     seg,
+    sourceLetter,
     txt,
     type DrawArgs,
     type Frame,
@@ -17,7 +18,7 @@ import {
     type Scene,
 } from "../kit";
 import { NAME } from "../letters";
-import { GOLD_GLOW, drawName, drawSlot, sheen, slotsOf, type Slot } from "./word-style";
+import { drawName, drawSlot, slotsOf, type Slot } from "./word-style";
 
 const PLACES: Record<"wide" | "narrow", [number, number][]> = {
     wide: [
@@ -48,8 +49,6 @@ const nameAt = (frame: Frame): NameLayout => {
 type Built = {
     size: number;
     slots: Slot[];
-    left: number;
-    span: number;
     cx: number;
     cy: number;
     capSize: number;
@@ -71,8 +70,6 @@ function build(a: DrawArgs, k: number): Built {
     const built: Built = {
         size,
         slots: slotsOf(WORDS[k].word, xs),
-        left: xs[0] - size * 0.4,
-        span: xs[xs.length - 1] - xs[0] + size * 0.8,
         cx,
         cy,
         capSize: cap.size,
@@ -91,16 +88,14 @@ function drawCaption(a: DrawArgs, b: Built, alpha: number) {
 }
 
 function drawPlaced(a: DrawArgs, k: number, alpha: number) {
-    const { g, font, t } = a;
+    const { g, font } = a;
     const b = build(a, k);
-    const grad = b.slots.some((s) => s.kind === "sheen") ? sheen(g, b.left, b.span, t) : null;
-    const f = fontOf(font, NAME_WEIGHT, b.size);
-    b.slots.forEach((s) => drawSlot(g, s, s.x, b.cy, f, alpha, false, grad));
+    b.slots.forEach((s) => drawSlot(g, font, s, s.x, b.cy, b.size, b.size, alpha));
     drawCaption(a, b, alpha);
 }
 
 function drawFlying(a: DrawArgs, k: number, p: number) {
-    const { g, frame, font, t } = a;
+    const { g, frame, font } = a;
     const lay = nameAt(frame);
     const b = build(a, k);
     const nxs = centres(g, NAME, fontOf(font, NAME_WEIGHT, lay.size), lay.ls, frame.W / 2);
@@ -108,7 +103,6 @@ function drawFlying(a: DrawArgs, k: number, p: number) {
     drawName(a, lay, gold, seg(p, 0, 0.1) * (1 - seg(p, 0.5, 0.7)), 1, 0);
 
     const dur = Math.min(0.3, 0.45 - 0.03 * (b.slots.length - 1));
-    const grad = b.slots.some((s) => s.kind === "sheen") ? sheen(g, b.left, b.span, t) : null;
     b.slots.forEach((s, n) => {
         const start = 0.05 + 0.03 * n;
         const e = ease(seg(p, start, start + dur));
@@ -119,7 +113,7 @@ function drawFlying(a: DrawArgs, k: number, p: number) {
         const y = sy + (b.cy - sy) * e;
         const size = guest ? b.size : lay.size + (b.size - lay.size) * e;
         const alpha = guest ? seg(p, start, start + 0.06) : seg(p, start, start + 0.05);
-        drawSlot(g, s, x, y, fontOf(font, NAME_WEIGHT, size), alpha, 1 - e > 0.02, grad);
+        drawSlot(g, font, s, x, y, b.size, size, alpha);
     });
     drawCaption(a, b, seg(p, 0.45, 0.6));
 }
@@ -128,7 +122,7 @@ function drawGoldName(a: DrawArgs, lay: NameLayout, alpha: number) {
     const { g, frame, font } = a;
     const f = fontOf(font, NAME_WEIGHT, lay.size);
     const xs = centres(g, NAME, f, lay.ls, frame.W / 2);
-    [...NAME].forEach((ch, i) => txt(g, ch, xs[i], lay.y, f, C.goldHi, alpha, GOLD_GLOW, 18));
+    [...NAME].forEach((ch, i) => sourceLetter(g, ch, xs[i], lay.y, f, alpha));
 }
 
 export const orbit: Scene = {

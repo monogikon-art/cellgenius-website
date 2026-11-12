@@ -22,6 +22,10 @@ export const C = {
 
 export const restColor = (i: number) => (i === 2 || i === 7 ? C.ai : C.text);
 
+export const REST_DIM = 0.75;
+export const SOURCE_GLOW = "rgba(240,210,154,.9)";
+export const SOURCE_BLUR = 36;
+
 export const pickFrame = (cssW: number, cssH: number): Frame => (cssW / cssH < 1.1 ? NARROW : WIDE);
 
 export const clamp = (t: number) => Math.max(0, Math.min(1, t));
@@ -66,6 +70,9 @@ export function txt(
     g.fillText(s, x, y);
     g.restore();
 }
+
+export const sourceLetter = (g: Ctx, ch: string, x: number, y: number, f: string, alpha: number) =>
+    txt(g, ch, x, y, f, C.goldHi, alpha, SOURCE_GLOW, SOURCE_BLUR);
 
 export function line(g: Ctx, pts: number[][], color: string, w: number, blur = 0, alpha = 1) {
     if (pts.length < 2 || alpha <= 0) return;
@@ -130,6 +137,21 @@ export function fitWordSize(g: Ctx, frame: Frame, family: string, word: string, 
     return size;
 }
 
+function goldInk(h: Ctx, y: number, size: number) {
+    const gr = h.createLinearGradient(0, y - size / 2, 0, y + size / 2);
+    gr.addColorStop(0, C.goldHi);
+    gr.addColorStop(0.55, C.gold);
+    gr.addColorStop(1, C.goldLo);
+    return gr;
+}
+
+function stripe(h: Ctx, y: number, size: number, w: number) {
+    h.globalCompositeOperation = "destination-out";
+    h.fillStyle = "rgba(0,0,0,.28)";
+    for (let yy = y - size / 2; yy < y + size / 2; yy += 7) h.fillRect(0, yy, w, 2);
+    h.globalCompositeOperation = "source-over";
+}
+
 let holoCanvas: HTMLCanvasElement | null = null;
 let holoBand: [number, number] | null = null;
 
@@ -151,18 +173,12 @@ export function holo(g: Ctx, frame: Frame, family: string, s: string, x: number,
     h.font = f;
     h.textAlign = "center";
     h.textBaseline = "middle";
-    const gr = h.createLinearGradient(0, y - size / 2, 0, y + size / 2);
-    gr.addColorStop(0, C.goldHi);
-    gr.addColorStop(0.55, C.gold);
-    gr.addColorStop(1, C.goldLo);
-    h.fillStyle = gr;
+    h.fillStyle = goldInk(h, y, size);
     const xs = centres(h, s, f, HOLO_LS, x);
     [...s].forEach((ch, i) => {
         if (ch !== " ") h.fillText(ch, xs[i], y);
     });
-    h.globalCompositeOperation = "destination-out";
-    h.fillStyle = "rgba(0,0,0,.28)";
-    for (let yy = y - size / 2; yy < y + size / 2; yy += 7) h.fillRect(0, yy, frame.W, 2);
+    stripe(h, y, size, frame.W);
     g.save();
     g.globalAlpha *= alpha;
     setGlow(g, "rgba(240,210,154,.55)", 40);
@@ -171,6 +187,58 @@ export function holo(g: Ctx, frame: Frame, family: string, s: string, x: number,
     g.save();
     g.globalAlpha *= alpha;
     g.drawImage(holoCanvas, 0, top, frame.W, bottom - top, 0, top, frame.W, bottom - top);
+    g.restore();
+}
+
+const glyphs = new Map<string, HTMLCanvasElement>();
+
+function glyphSprite(family: string, weight: number, ch: string, size: number) {
+    const key = `${family}|${weight}|${ch}|${size}`;
+    const hit = glyphs.get(key);
+    if (hit) return hit;
+    const pad = Math.ceil(size * 0.45);
+    const w = Math.ceil(size * 1.2) + pad * 2;
+    const hgt = Math.ceil(size * 1.2) + pad * 2;
+    const ink = document.createElement("canvas");
+    ink.width = w;
+    ink.height = hgt;
+    const h = ink.getContext("2d")!;
+    h.font = fontOf(family, weight, size);
+    h.textAlign = "center";
+    h.textBaseline = "middle";
+    h.fillStyle = goldInk(h, hgt / 2, size);
+    h.fillText(ch, w / 2, hgt / 2);
+    stripe(h, hgt / 2, size, w);
+    const out = document.createElement("canvas");
+    out.width = w;
+    out.height = hgt;
+    const o = out.getContext("2d")!;
+    o.shadowColor = "rgba(240,210,154,.55)";
+    o.shadowBlur = Math.max(8, size * 0.18);
+    o.drawImage(ink, 0, 0);
+    o.shadowBlur = 0;
+    o.drawImage(ink, 0, 0);
+    glyphs.set(key, out);
+    return out;
+}
+
+export function holoGlyph(
+    g: Ctx,
+    family: string,
+    weight: number,
+    ch: string,
+    x: number,
+    y: number,
+    size: number,
+    drawSize: number,
+    alpha: number,
+) {
+    if (alpha <= 0) return;
+    const sprite = glyphSprite(family, weight, ch, Math.round(size));
+    const k = drawSize / Math.round(size);
+    g.save();
+    g.globalAlpha *= alpha;
+    g.drawImage(sprite, x - (sprite.width * k) / 2, y - (sprite.height * k) / 2, sprite.width * k, sprite.height * k);
     g.restore();
 }
 

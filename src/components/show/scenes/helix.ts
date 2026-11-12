@@ -12,8 +12,10 @@ import {
     holo,
     line,
     nameLayout,
+    REST_DIM,
     restColor,
     seg,
+    sourceLetter,
     txt,
     type DrawArgs,
     type Frame,
@@ -118,8 +120,8 @@ function drawHelix(a: DrawArgs, flat: number) {
         const f = fontOf(font, 700, size);
         const l = litAt(i);
         const depth = 0.55 + 0.45 * depth01;
-        txt(g, NAME[i], itemX[k], itemY[k], f, "rgba(170,180,210,.85)", depth * arrive * (1 - l) * (1 - flat));
-        txt(g, NAME[i], itemX[k], itemY[k], f, C.goldHi, depth * arrive * l, "rgba(240,210,154,.9)", 34);
+        txt(g, NAME[i], itemX[k], itemY[k], f, restColor(i), REST_DIM * depth * arrive * (1 - l) * (1 - flat));
+        sourceLetter(g, NAME[i], itemX[k], itemY[k], f, depth * arrive * l);
         if (flat > 0) {
             txt(g, NAME[i], itemX[k], itemY[k], fontOf(font, NAME_WEIGHT, size), restColor(i), flat);
         }

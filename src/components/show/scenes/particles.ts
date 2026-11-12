@@ -8,6 +8,7 @@ import {
     ease,
     fontOf,
     nameLayout,
+    restColor,
     rng,
     runWidth,
     seg,
@@ -17,25 +18,35 @@ import {
 import { NAME } from "../letters";
 
 const GOLD_DOT = "rgba(240,210,154,.55)";
+const WHITE_DOT = "rgba(238,242,248,.55)";
 const AI_DOT = "rgba(129,140,248,.55)";
 const GOLD_HALO = "rgba(240,210,154,.10)";
+const WHITE_HALO = "rgba(238,242,248,.10)";
 const AI_HALO = "rgba(129,140,248,.10)";
 const TAU = Math.PI * 2;
 const SQUARE_BELOW = 1.3;
-const AI_SHARE = 0.22;
-const GROUPS = 4;
 const CLOSING_TEXT = "CHANGE  IN  US";
+
+const GOLD = 0;
+const WHITE = 1;
+const PERI = 2;
+const DOTS = [GOLD_DOT, WHITE_DOT, AI_DOT];
+const HALOS = [GOLD_HALO, WHITE_HALO, AI_HALO];
+
+const nameInk = (i: number) => (restColor(i) === C.ai ? PERI : WHITE);
+const wordInk = () => GOLD;
+const closingInk = (i: number) => (i < 6 ? (i === 2 ? PERI : WHITE) : GOLD);
 
 type Cloud = {
     count: number;
     sets: Float32Array[];
+    inks: Uint8Array[];
+    ink: Uint8Array;
     burstX: Float32Array;
     burstY: Float32Array;
     delay: Float32Array;
     size: Float32Array;
     halos: Uint32Array;
-    haloAi: Uint8Array;
-    groupEnd: number[];
     xs: Float32Array;
     ys: Float32Array;
 };
@@ -67,7 +78,7 @@ function buildCloud(frame: Frame, font: string): Cloud {
     o.height = H;
     const h = o.getContext("2d", { willReadFrequently: true })!;
 
-    const sample = (s: string, weight: number, size: number, ls: number, y: number) => {
+    const sample = (s: string, weight: number, size: number, ls: number, y: number, inkOf: (i: number) => number) => {
         h.clearRect(0, 0, W, H);
         const fit = Math.min(1, (W * 0.9) / runWidth(h, s, fontOf(font, weight, size), ls));
         const f = fontOf(font, weight, size * fit);
@@ -82,10 +93,17 @@ function buildCloud(frame: Frame, font: string): Cloud {
         const top = Math.max(0, Math.floor(y - size));
         const bottom = Math.min(H, Math.ceil(y + size));
         const d = h.getImageData(0, top, W, bottom - top).data;
+        const letterIdx = [...s].flatMap((ch, i) => (ch === " " ? [] : [i]));
         const pts: number[] = [];
+        const ink: number[] = [];
         for (let yy = top; yy < bottom; yy += step) {
+            let near = 0;
             for (let xx = 0; xx < W; xx += step) {
-                if (d[((yy - top) * W + xx) * 4 + 3] > 128) pts.push(xx, yy);
+                if (d[((yy - top) * W + xx) * 4 + 3] > 128) {
+                    while (near < letterIdx.length - 1 && Math.abs(xs[letterIdx[near + 1]] - xx) < Math.abs(xs[letterIdx[near]] - xx)) near++;
+                    pts.push(xx, yy);
+                    ink.push(inkOf(letterIdx[near]));
+                }
             }
         }
         const n = pts.length / 2;
@@ -93,13 +111,16 @@ function buildCloud(frame: Frame, font: string): Cloud {
             const j = Math.floor(rnd() * (i + 1));
             [pts[2 * i], pts[2 * j]] = [pts[2 * j], pts[2 * i]];
             [pts[2 * i + 1], pts[2 * j + 1]] = [pts[2 * j + 1], pts[2 * i + 1]];
+            [ink[i], ink[j]] = [ink[j], ink[i]];
         }
         const out = new Float32Array(count * 2);
+        const outInk = new Uint8Array(count);
         for (let i = 0; i < count; i++) {
             out[2 * i] = pts[2 * (i % n)];
             out[2 * i + 1] = pts[2 * (i % n) + 1];
+            outInk[i] = ink[i % n];
         }
-        return out;
+        return { pts: out, ink: outInk };
     };
 
     const scatter = new Float32Array(count * 2);
@@ -109,27 +130,22 @@ function buildCloud(frame: Frame, font: string): Cloud {
     }
 
     const lay = nameLayout(frame);
-    const nameSet = () => sample(NAME, NAME_WEIGHT, lay.size, lay.ls, lay.y);
+    const nameSet = sample(NAME, NAME_WEIGHT, lay.size, lay.ls, lay.y, nameInk);
     const wordSets = WORDS.map(({ word }) => {
         const { size, y } = wordLayout(frame, word);
-        return sample(word, 700, size, frame.narrow ? 10 : 18, y);
+        return sample(word, 700, size, frame.narrow ? 10 : 18, y, wordInk);
     });
     const closeSize = lay.size * 1.1;
-    const sets = [
-        scatter,
-        nameSet(),
-        ...wordSets,
-        sample(CLOSING_TEXT, NAME_WEIGHT, closeSize, lay.ls * 0.6, lay.y),
-    ];
+    const closing = sample(CLOSING_TEXT, NAME_WEIGHT, closeSize, lay.ls * 0.6, lay.y, closingInk);
+    const placed = [nameSet, ...wordSets, closing];
+    const sets = [scatter, ...placed.map((p) => p.pts)];
+    const inks = [new Uint8Array(count), ...placed.map((p) => p.ink)];
 
     const burstX = new Float32Array(count);
     const burstY = new Float32Array(count);
     const delay = new Float32Array(count);
     const size = new Float32Array(count);
     const halos: number[] = [];
-    const haloAi: number[] = [];
-    const aiFrom = Math.round(count * (1 - AI_SHARE));
-    const groupEnd = [aiFrom >> 1, aiFrom, aiFrom + ((count - aiFrom) >> 1), count];
     for (let i = 0; i < count; i++) {
         const a = rnd() * TAU;
         const r = 60 + rnd() * 160;
@@ -137,21 +153,18 @@ function buildCloud(frame: Frame, font: string): Cloud {
         burstY[i] = Math.sin(a) * r;
         delay[i] = rnd() * 0.35;
         size[i] = 0.7 + rnd() * 1.7;
-        if (rnd() < 0.04) {
-            halos.push(i);
-            haloAi.push(i >= aiFrom ? 1 : 0);
-        }
+        if (rnd() < 0.04) halos.push(i);
     }
     return {
         count,
         sets,
+        inks,
+        ink: new Uint8Array(count),
         burstX,
         burstY,
         delay,
         size,
         halos: Uint32Array.from(halos),
-        haloAi: Uint8Array.from(haloAi),
-        groupEnd,
         xs: new Float32Array(count),
         ys: new Float32Array(count),
     };
@@ -180,7 +193,9 @@ export const particles: Scene = {
         const m = phase.kind === "arrive" ? seg(phase.p, 0, 0.9) : seg(phase.p, 0, 0.5);
         const A = cloud.sets[from];
         const B = cloud.sets[to];
-        const { count, delay, burstX, burstY, xs, ys, size } = cloud;
+        const { count, delay, burstX, burstY, xs, ys, size, ink } = cloud;
+        const inkA = cloud.inks[from];
+        const inkB = cloud.inks[to];
         const w1 = t * 1.8;
         const w2 = t * 1.5;
         for (let i = 0; i < count; i++) {
@@ -190,16 +205,16 @@ export const particles: Scene = {
             const sy = A[2 * i + 1];
             xs[i] = sx + (B[2 * i] - sx) * k + burstX[i] * burst + Math.sin(w1 + i) * 1.1;
             ys[i] = sy + (B[2 * i + 1] - sy) * k + burstY[i] * burst + Math.cos(w2 + i) * 1.1;
+            ink[i] = k < 0.5 ? inkA[i] : inkB[i];
         }
 
         const prevOp = g.globalCompositeOperation;
         g.globalCompositeOperation = "lighter";
-        let lo = 0;
-        for (let q = 0; q < GROUPS; q++) {
-            const hi = cloud.groupEnd[q];
-            g.fillStyle = q < 2 ? GOLD_DOT : AI_DOT;
+        for (let q = 0; q < DOTS.length; q++) {
+            g.fillStyle = DOTS[q];
             g.beginPath();
-            for (let i = lo; i < hi; i++) {
+            for (let i = 0; i < count; i++) {
+                if (ink[i] !== q) continue;
                 const r = size[i];
                 if (r < SQUARE_BELOW) {
                     g.rect(xs[i] - r, ys[i] - r, r * 2, r * 2);
@@ -209,14 +224,13 @@ export const particles: Scene = {
                 }
             }
             g.fill();
-            lo = hi;
         }
-        for (let pass = 0; pass < 2; pass++) {
-            g.fillStyle = pass ? AI_HALO : GOLD_HALO;
+        for (let pass = 0; pass < HALOS.length; pass++) {
+            g.fillStyle = HALOS[pass];
             g.beginPath();
             for (let n = 0; n < cloud.halos.length; n++) {
-                if (cloud.haloAi[n] !== pass) continue;
                 const i = cloud.halos[n];
+                if (ink[i] !== pass) continue;
                 const r = size[i] * 6;
                 g.moveTo(xs[i] + r, ys[i]);
                 g.arc(xs[i], ys[i], r, 0, TAU);
