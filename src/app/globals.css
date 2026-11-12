@@ -26,10 +26,6 @@ body {
     color: var(--color-fg);
 }
 
-/* The show is choreographed as one 294.4s loop; the hero plays it at twice that tempo. */
-.hero-show [data-chainge-show] * { animation-duration: 147.2s !important; }
-.hero-show[data-paused] [data-chainge-show] * { animation-play-state: paused !important; }
-
 .mark-3d { position: relative; perspective: 600px; animation: mark-float 6s ease-in-out infinite; }
 .mark-3d-tilt { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: mark-tilt 9s ease-in-out infinite alternate; }
 .mark-3d-sweep {

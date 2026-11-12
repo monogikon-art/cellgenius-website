@@ -121,10 +121,14 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
         };
 
         const ro = new ResizeObserver(layout);
+        const onResize = () => {
+            if (family) layout();
+        };
         const onVisible = () => {
             if (document.visibilityState === "visible") last = 0;
         };
         document.addEventListener("visibilitychange", onVisible);
+        window.addEventListener("resize", onResize);
         void document.fonts.ready.then(() => {
             if (cancelled) return;
             family = getComputedStyle(document.body).fontFamily;
@@ -140,6 +144,7 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
             if (raf) cancelAnimationFrame(raf);
             ro.disconnect();
             document.removeEventListener("visibilitychange", onVisible);
+            window.removeEventListener("resize", onResize);
         };
     }, [reduced]);
 

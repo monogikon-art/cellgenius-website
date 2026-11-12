@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
-import { ChaingeIcon } from "../brand/changenius-icon";
-import { ChangeniusWordmarkShow } from "../brand/changenius-wordmark-show";
+import { ChangeniusMark3D } from "../brand/changenius-mark-3d";
+import { ShowStage } from "../show/ShowStage";
 import { useInView, usePageVisible, usePrefersReducedMotion } from "./hooks";
 
 export function HeroCinematic() {
@@ -26,11 +26,9 @@ export function HeroCinematic() {
             </h1>
             <Backdrop reduced={reduced} running={running} />
             <div className="relative z-10 mx-auto grid w-full max-w-6xl flex-1 place-items-center px-4 py-6 sm:px-6">
-                <div className="w-full max-w-4xl">
-                    <ChaingeIcon className="mx-auto mb-4 size-14 text-white sm:[@media(min-height:840px)]:size-20" />
-                    <div className="text-center">
-                        <ChangeniusWordmarkShow />
-                    </div>
+                <div className="w-full max-w-6xl">
+                    <ChangeniusMark3D className="mx-auto mb-4" />
+                    <ShowStage running={running} reduced={reduced} />
                 </div>
             </div>
             <button
