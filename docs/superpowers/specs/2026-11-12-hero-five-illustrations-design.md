@@ -16,7 +16,7 @@ the page as it is.
 
 | Question | Decision |
 |---|---|
-| Order | 1 Golden circuit → 2 Particles → 3 Rising words → 4 The bank's DNA → 5 Orbit, then back to 1. The circuit opens because it shows the words being drawn straight out of the name, so a visitor understands the idea from the start; the orbit closes because it gathers every word at once. |
+| Order | **Changed 13 Nov 2026 (owner, "cinematic start"):** 1 Particles → 2 Golden circuit → 3 The bank's DNA → 4 Rising words → 5 Orbit, then back to 1. The name forming out of light grabs attention first; the circuit then shows the words being drawn out of the name; the orbit closes the loop. (12 Nov order: circuit, particles, rising words, DNA, orbit.) |
 | The C | The film's own rendered porcelain-and-gold C, about twice today's size, with light motion: a gentle float, a small 3D tilt, a soft light sweep every few seconds and a glinting spark. Not live 3D. |
 | Words, in this order, in every illustration | CHANGE → AI → AGENTIC AI → CHAIN → SIGN → GAIN → GENIUS, then CHANGE IN US. |
 

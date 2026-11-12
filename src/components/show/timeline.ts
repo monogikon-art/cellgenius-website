@@ -1,4 +1,4 @@
-export const SCENES = ["circuit", "particles", "rising", "helix", "orbit"] as const;
+export const SCENES = ["particles", "circuit", "helix", "rising", "orbit"] as const;
 export type SceneId = (typeof SCENES)[number];
 export const ARRIVE = 2.4;
 export const WORD = 4.6;

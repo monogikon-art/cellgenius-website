@@ -42,12 +42,12 @@ test("the hero is the five-illustration stage and the 3D C alone, with no consol
     expect(errors.filter((e) => !/Failed to load resource|challenges\.cloudflare/.test(e))).toEqual([]);
 });
 
-test("the show starts on the golden circuit and loops back to it from the end of the orbit", async ({ page }) => {
+test("the show starts on the particles and loops back to them from the end of the orbit", async ({ page }) => {
     await page.goto("/");
-    await expect(stage(page)).toHaveAttribute("data-scene", "circuit");
+    await expect(stage(page)).toHaveAttribute("data-scene", "particles");
     await page.goto("/?scene=orbit&t=36");
     await expect(stage(page)).toHaveAttribute("data-scene", "orbit");
-    await expect(stage(page)).toHaveAttribute("data-scene", "circuit", { timeout: 10_000 });
+    await expect(stage(page)).toHaveAttribute("data-scene", "particles", { timeout: 10_000 });
 });
 
 test("pause stops time and the backdrop video, and play resumes them", async ({ page }) => {

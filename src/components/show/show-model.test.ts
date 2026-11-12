@@ -36,14 +36,15 @@ describe("lettersOf", () => {
 
 describe("timeline", () => {
     it("plays the five scenes in the owner's order and loops", () => {
-        expect(SCENES).toEqual(["circuit", "particles", "rising", "helix", "orbit"]);
+        expect(SCENES).toEqual(["particles", "circuit", "helix", "rising", "orbit"]);
         expect(SCENE_SECONDS).toBeCloseTo(39.6);
         expect(LOOP_SECONDS).toBeCloseTo(198);
-        expect(sceneAt(0).id).toBe("circuit");
-        expect(sceneAt(40).id).toBe("particles");
-        expect(sceneAt(3 * 39.6 + 1).id).toBe("helix");
+        expect(sceneAt(0).id).toBe("particles");
+        expect(sceneAt(40).id).toBe("circuit");
+        expect(sceneAt(2 * 39.6 + 1).id).toBe("helix");
+        expect(sceneAt(3 * 39.6 + 1).id).toBe("rising");
         expect(sceneAt(4 * 39.6 + 39).id).toBe("orbit");
-        expect(sceneAt(198 + 1).id).toBe("circuit");
+        expect(sceneAt(198 + 1).id).toBe("particles");
     });
     it("fades across each boundary", () => {
         expect(sceneAt(0.2).alpha).toBeCloseTo(0.5);
