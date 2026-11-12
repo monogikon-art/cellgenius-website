@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Bot } from "lucide-react";
-import { ASSISTANT, SITE } from "@/data/content";
+import { ASSISTANT } from "@/data/content";
 
 const AssistantChat = dynamic(() => import("./AssistantChat").then((m) => m.AssistantChat), {
     ssr: false,
@@ -10,22 +10,7 @@ const AssistantChat = dynamic(() => import("./AssistantChat").then((m) => m.Assi
 });
 
 export function AssistantSection({ nonce, enabled, siteKey }: { nonce?: string; enabled: boolean; siteKey: string }) {
-    if (!enabled) {
-        return (
-            <section id="assistant" className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
-                <p className="rounded-2xl border border-white/10 bg-ink-1/70 p-6 text-fg">
-                    Questions or a demo? Email{" "}
-                    <a
-                        href={`mailto:${SITE.email}`}
-                        className="text-gold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-                    >
-                        {SITE.email}
-                    </a>
-                    .
-                </p>
-            </section>
-        );
-    }
+    if (!enabled) return null;
     return (
         <section id="assistant" aria-labelledby="assistant-title" className="mx-auto max-w-4xl px-4 py-24 sm:px-6">
             <div className="mb-8 flex items-start gap-4 sm:items-center">

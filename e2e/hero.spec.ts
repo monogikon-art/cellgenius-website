@@ -37,7 +37,8 @@ test("the hero is the five-illustration stage and the 3D C alone, with no consol
     await expect(hero(page).locator("p")).toHaveCount(0);
     await expect(hero(page).getByRole("button")).toHaveCount(1);
     await expect(hero(page).getByRole("button", { name: "Pause animation" })).toBeVisible();
-    await expect(hero(page).getByRole("link")).toHaveCount(0);
+    await expect(hero(page).getByRole("link")).toHaveCount(1);
+    await expect(hero(page).getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "https://app.cellgenius-ai.com/login");
     expect(errors.filter((e) => !/Failed to load resource|challenges\.cloudflare/.test(e))).toEqual([]);
 });
 

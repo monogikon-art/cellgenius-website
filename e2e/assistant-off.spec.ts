@@ -4,11 +4,11 @@ test.beforeEach(async ({ page }) => {
     await page.route((url) => url.pathname.startsWith("/media/"), (route) => route.fulfill({ status: 204 }));
 });
 
-test("with the assistant off, the section is only an email link", async ({ page }) => {
+test("with the assistant off, there is no assistant section and no email address, only Contact us", async ({ page }) => {
     await page.goto("/");
-    const section = page.locator("section#assistant");
-    await expect(section).toHaveText("Questions or a demo? Email info@cellgenius-ai.com.");
-    await expect(section.getByRole("link", { name: "info@cellgenius-ai.com" })).toHaveAttribute("href", "mailto:info@cellgenius-ai.com");
+    await expect(page.locator("section#assistant")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText("@cellgenius-ai.com");
+    await expect(page.getByRole("contentinfo").getByRole("link", { name: "Contact us" })).toHaveAttribute("href", "mailto:support@cellgenius-ai.com");
     await expect(page.getByRole("heading", { name: /EPMO AI Assistant/ })).toHaveCount(0);
     await expect(page.locator("#assistant-input")).toHaveCount(0);
     await expect(page.locator('script[src*="challenges.cloudflare.com"]')).toHaveCount(0);

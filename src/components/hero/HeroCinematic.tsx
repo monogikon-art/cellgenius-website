@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import { LogIn, Pause, Play } from "lucide-react";
+import { SITE } from "@/data/content";
 import { ChangeniusMark3D } from "../brand/changenius-mark-3d";
 import { ShowStage } from "../show/ShowStage";
 import { useInView, usePageVisible, usePrefersReducedMotion } from "./hooks";
@@ -25,6 +26,13 @@ export function HeroCinematic() {
                 Changenius — every change in your organisation, governed in one place
             </h1>
             <Backdrop reduced={reduced} running={running} />
+            <a
+                href={SITE.appLoginUrl}
+                className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-ink-0/50 px-4 py-2 text-sm font-medium text-fg backdrop-blur hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold sm:right-6 sm:top-6"
+            >
+                <LogIn aria-hidden="true" className="size-4" />
+                Sign in
+            </a>
             <div className="relative z-10 mx-auto grid w-full max-w-6xl flex-1 place-items-center px-4 py-6 sm:px-6">
                 <div className="w-full max-w-6xl">
                     <ChangeniusMark3D className="mx-auto mb-4" />

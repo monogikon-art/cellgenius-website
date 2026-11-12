@@ -1,3 +1,4 @@
+import { Mail } from "lucide-react";
 import { SITE } from "@/data/content";
 import { Wordmark } from "./Wordmark";
 
@@ -9,15 +10,13 @@ export function Footer({ assistantOn }: { assistantOn: boolean }) {
                     <p className="text-base text-fg">
                         <Wordmark /> <span className="text-muted">by {SITE.company}</span>
                     </p>
-                    <p className="mt-3">
-                        <a href={`mailto:${SITE.email}`} className="rounded-sm hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
-                            {SITE.email}
-                        </a>
-                        {" · "}
-                        <a href={SITE.appLoginUrl} className="rounded-sm hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
-                            Sign in
-                        </a>
-                    </p>
+                    <a
+                        href={`mailto:${SITE.email}`}
+                        className="mt-4 inline-flex items-center gap-2 rounded-full border border-gold/60 px-5 py-2 font-medium text-gold hover:bg-gold hover:text-ink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                    >
+                        <Mail aria-hidden="true" className="size-4" />
+                        Contact us
+                    </a>
                 </div>
                 <div className="space-y-3">
                     {assistantOn ? (

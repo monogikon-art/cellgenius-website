@@ -3,7 +3,7 @@ export const SITE = {
     company: "CellGenius",
     url: "https://cellgenius-ai.com",
     appLoginUrl: "https://app.cellgenius-ai.com/login",
-    email: "info@cellgenius-ai.com",
+    email: "support@cellgenius-ai.com",
 } as const;
 
 export const NAME = "CHANGENIUS";

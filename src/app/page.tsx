@@ -4,7 +4,6 @@ import { FilmPlayerProvider } from "@/components/films/film-player";
 import { FilmsSection } from "@/components/films/FilmsSection";
 import { Footer } from "@/components/Footer";
 import { HeroCinematic } from "@/components/hero/HeroCinematic";
-import { SignInPanel } from "@/components/SignInPanel";
 
 export default async function Home() {
     const nonce = (await headers()).get("x-nonce") ?? undefined;
@@ -15,7 +14,6 @@ export default async function Home() {
             <main>
                 <HeroCinematic />
                 <AssistantSection nonce={nonce} enabled={assistantOn} siteKey={siteKey} />
-                <SignInPanel />
                 <FilmsSection />
             </main>
             <Footer assistantOn={assistantOn} />
