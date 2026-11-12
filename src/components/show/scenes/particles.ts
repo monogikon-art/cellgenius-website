@@ -124,9 +124,12 @@ function buildCloud(frame: Frame, font: string): Cloud {
     };
 
     const scatter = new Float32Array(count * 2);
+    // A soft oval inside the frame: a rectangle wider than the stage showed hard clipped edges on the first frame.
     for (let i = 0; i < count; i++) {
-        scatter[2 * i] = W / 2 + (rnd() - 0.5) * W * 1.15;
-        scatter[2 * i + 1] = H / 2 + (rnd() - 0.5) * H * 1.3;
+        const angle = rnd() * Math.PI * 2;
+        const r = Math.pow(rnd(), 0.7);
+        scatter[2 * i] = W / 2 + Math.cos(angle) * r * W * 0.46;
+        scatter[2 * i + 1] = H / 2 + Math.sin(angle) * r * H * 0.42;
     }
 
     const lay = nameLayout(frame);
