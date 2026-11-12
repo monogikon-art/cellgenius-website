@@ -2,7 +2,6 @@ import { WORDS } from "../copy";
 import {
     C,
     NAME_WEIGHT,
-    NARROW,
     caption,
     centres,
     dot,
@@ -22,29 +21,28 @@ import {
 import { NAME, lettersOf } from "../letters";
 
 const MUTED = "rgba(154,166,189,.55)";
-const LANE_GAP = 14;
 
 const nameAt = (frame: Frame): NameLayout => {
-    if (frame.narrow) return { ...nameLayout(NARROW), y: 900 };
-    return { size: 118, ls: 26, y: 700 };
+    return { ...nameLayout(frame), y: frame.narrow ? 900 : 700 };
 };
 
 const wordY = (frame: Frame) => (frame.narrow ? 420 : 300);
-const captionAt = (frame: Frame) => (frame.narrow ? 600 : 470);
+const captionAt = (frame: Frame) => (frame.narrow ? 1190 : 1015);
 const laneStep = (frame: Frame) => (frame.narrow ? 10 : 12);
+const unit = (lay: NameLayout) => lay.size / 118;
 
-function route(xs: number[], idx: number[], base: number, lane: number) {
+function route(xs: number[], idx: number[], base: number, lane: number, gap: number) {
     const out: number[][] = [];
     idx.forEach((i, n) => {
         const x = xs[i];
         if (n === 0) {
-            out.push([x, base], [x, lane - LANE_GAP]);
+            out.push([x, base], [x, lane - gap]);
             return;
         }
         const px = xs[idx[n - 1]];
         const dir = Math.sign(x - px) || 1;
-        out.push([px + dir * LANE_GAP, lane], [x - dir * LANE_GAP, lane], [x, lane - LANE_GAP], [x, base]);
-        if (n < idx.length - 1) out.push([x, lane - LANE_GAP]);
+        out.push([px + dir * gap, lane], [x - dir * gap, lane], [x, lane - gap], [x, base]);
+        if (n < idx.length - 1) out.push([x, lane - gap]);
     });
     return out;
 }
@@ -108,16 +106,17 @@ function drawWord(a: DrawArgs, k: number, p: number) {
     const lay = nameAt(frame);
     const f = fontOf(font, NAME_WEIGHT, lay.size);
     const xs = centres(g, NAME, f, lay.ls, frame.W / 2);
-    const base = lay.y + 72 * (lay.size / 118);
-    const step = laneStep(frame);
+    const u = unit(lay);
+    const base = lay.y + 72 * u;
+    const step = laneStep(frame) * u;
     const handOver = k === WORDS.length - 1 ? seg(p, 0.9, 1) : 0;
     const keep = 1 - handOver;
     const fo = 1 - seg(p, 0.9, 1);
 
     for (let j = 0; j < k; j++) {
         const stops = lettersOf(WORDS[j].word).filter((i): i is number => i !== null);
-        line(g, route(xs, stops, base, lay.y + 136 + j * step), "rgba(129,140,248,.45)", 3, 12, keep);
-        stops.forEach((i) => dot(g, xs[i], base, 6, "rgba(129,140,248,.8)", 10, keep));
+        line(g, route(xs, stops, base, lay.y + 136 * u + j * step, 14 * u), "rgba(129,140,248,.45)", 3 * u, 12, keep);
+        stops.forEach((i) => dot(g, xs[i], base, 6 * u, "rgba(129,140,248,.8)", 10, keep));
     }
 
     const word = WORDS[k].word;
@@ -129,13 +128,13 @@ function drawWord(a: DrawArgs, k: number, p: number) {
     });
     const stopSlot = slots.filter((_, n) => all[n] !== null);
 
-    const size = fitWordSize(a, word, frame.narrow ? (word === "AGENTIC AI" ? 104 : 150) : 190);
+    const size = fitWordSize(a, word, frame.narrow ? (word === "AGENTIC AI" ? 104 : 170) : 220);
     const wy = wordY(frame);
     const wxs = centres(g, word, fontOf(font, 700, size), 14, frame.W / 2);
     const wordBottom = wy + size / 2;
     const top = lay.y - lay.size * 0.525;
 
-    const pts = route(xs, stops, base, lay.y + 118 * (lay.size / 118));
+    const pts = route(xs, stops, base, lay.y + 118 * u, 14 * u);
     const tp = ease(seg(p, 0.04, 0.42));
     const reach = reachedAt(pts, base);
     const lit = stops.map((_, n) => tp >= reach[n] - 0.001);
@@ -161,10 +160,10 @@ function drawWord(a: DrawArgs, k: number, p: number) {
     }
 
     const drawn = partial(pts, tp);
-    line(g, drawn, C.gold, 6, 34, keep);
-    line(g, drawn, "#fff3d6", 2, 0, keep);
+    line(g, drawn, C.gold, 6 * u, 34, keep);
+    line(g, drawn, "#fff3d6", 2 * u, 0, keep);
     const head = drawn[drawn.length - 1];
-    if (tp < 1) dot(g, head[0], head[1], 7, "#fff", 24);
+    if (tp < 1) dot(g, head[0], head[1], 7 * u, "#fff", 24);
 
     [...NAME].forEach((ch, i) => {
         const n = stops.indexOf(i);
@@ -176,8 +175,8 @@ function drawWord(a: DrawArgs, k: number, p: number) {
         }
         if (handOver > 0) txt(g, ch, xs[i], lay.y, f, i === 2 || i === 7 ? C.ai : C.text, handOver);
         if (on) {
-            dot(g, xs[i], base, 9, C.goldHi, 24, keep);
-            dot(g, xs[i], base, 3.5, "#fff", 0, keep);
+            dot(g, xs[i], base, 9 * u, C.goldHi, 24, keep);
+            dot(g, xs[i], base, 3.5 * u, "#fff", 0, keep);
         }
     });
 

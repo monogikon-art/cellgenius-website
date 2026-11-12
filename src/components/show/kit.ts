@@ -203,7 +203,7 @@ export function caption(
 export type NameLayout = { size: number; ls: number; y: number };
 
 export const nameLayout = (frame: Frame): NameLayout =>
-    frame.narrow ? { size: 92, ls: 8, y: 675 } : { size: 118, ls: 26, y: 540 };
+    frame.narrow ? { size: 124, ls: 8, y: 675 } : { size: 150, ls: 30, y: 540 };
 
 export const NAME_WEIGHT = 800;
 
@@ -213,9 +213,14 @@ export function drawClosure(a: DrawArgs, p: number, from: NameLayout) {
     const { g, frame, font } = a;
     const f = fontOf(font, NAME_WEIGHT, from.size);
     const rest = centres(g, "CHANGENIUS", f, from.ls, frame.W / 2);
-    const spaced = centres(g, "CHANGE" + "N" + "IN" + "N" + "US", f, from.ls, frame.W / 2);
+    const spacedText = "CHANGE" + "N" + "IN" + "N" + "US";
+    const wide = centres(g, spacedText, f, from.ls, frame.W / 2);
+    const span = wide[wide.length - 1] - wide[0] + from.size * 0.8;
+    const k = Math.min(1, (frame.W * 0.92) / span);
+    const spaced = centres(g, spacedText, fontOf(font, NAME_WEIGHT, from.size * k), from.ls * k, frame.W / 2);
     const target = [0, 1, 2, 3, 4, 5, 7, 8, 10, 11].map((i) => spaced[i]);
     const glide = ease(seg(p, 0, 0.35));
+    const now = fontOf(font, NAME_WEIGHT, from.size * (1 + (k - 1) * glide));
     const letters = "CHANGENIUS";
     CLOSURE_SOURCE.forEach((src, slot) => {
         const x = rest[src] + (target[slot] - rest[src]) * glide;
@@ -223,10 +228,10 @@ export function drawClosure(a: DrawArgs, p: number, from: NameLayout) {
         const gold = slot >= 6;
         const start = ch === "A" || src === 7 ? C.ai : C.text;
         if (gold) {
-            txt(g, ch, x, from.y, f, start, 1 - glide, undefined, 0, 0);
-            txt(g, ch, x, from.y, f, C.goldHi, glide, "rgba(212,175,106,.7)", 36, 0);
+            txt(g, ch, x, from.y, now, start, 1 - glide, undefined, 0, 0);
+            txt(g, ch, x, from.y, now, C.goldHi, glide, "rgba(212,175,106,.7)", 36, 0);
         } else {
-            txt(g, ch, x, from.y, f, start, 1, undefined, 0, 0);
+            txt(g, ch, x, from.y, now, start, 1, undefined, 0, 0);
         }
     });
     caption(g, frame, font, CLOSING_LINE, captionY(frame), ease(seg(p, 0.3, 0.5)), C.gold);
