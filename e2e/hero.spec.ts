@@ -44,9 +44,9 @@ test("the hero is the five-illustration stage and the 3D C alone, with no consol
 test("the show starts on the golden circuit and loops back to it from the end of the orbit", async ({ page }) => {
     await page.goto("/");
     await expect(stage(page)).toHaveAttribute("data-scene", "circuit");
-    await page.goto("/?scene=orbit&t=39");
+    await page.goto("/?scene=orbit&t=36");
     await expect(stage(page)).toHaveAttribute("data-scene", "orbit");
-    await expect(stage(page)).toHaveAttribute("data-scene", "circuit", { timeout: 2_000 });
+    await expect(stage(page)).toHaveAttribute("data-scene", "circuit", { timeout: 10_000 });
 });
 
 test("pause stops time and the backdrop video, and play resumes them", async ({ page }) => {
@@ -81,16 +81,28 @@ test("time stops while the hero is scrolled out of view", async ({ page }) => {
     expect(await showSeconds(page)).toBe(held);
 });
 
+async function runUntil(page: Page, seconds: number) {
+    await expect.poll(() => showSeconds(page), { timeout: 15_000 }).toBeGreaterThanOrEqual(seconds);
+    return showSeconds(page);
+}
+
+async function expectNoRestart(page: Page, before: number) {
+    const after = await showSeconds(page);
+    expect(after).toBeGreaterThanOrEqual(before);
+    await expect.poll(() => showSeconds(page)).toBeGreaterThan(after);
+}
+
 test("a height-only resize (a phone's address bar) and a width change both leave time running", async ({ page }) => {
     await page.goto("/");
-    await waitForRunning(page);
     const size = page.viewportSize()!;
-    const before = await showSeconds(page);
+    const before = await runUntil(page, 3);
     await page.setViewportSize({ width: size.width, height: size.height - 60 });
-    await expect.poll(() => showSeconds(page)).toBeGreaterThan(before);
+    await page.waitForTimeout(600);
+    await expectNoRestart(page, before);
     const mid = await showSeconds(page);
     await page.setViewportSize({ width: size.width - 40, height: size.height - 60 });
-    await expect.poll(() => showSeconds(page)).toBeGreaterThan(mid);
+    await page.waitForTimeout(600);
+    await expectNoRestart(page, mid);
 });
 
 test.describe("large-viewport height bands", () => {
@@ -100,22 +112,21 @@ test.describe("large-viewport height bands", () => {
 
     test("a small height change within a band keeps the stage's height and time running", async ({ page }) => {
         await page.goto("/");
-        await waitForRunning(page);
+        const before = await runUntil(page, 3);
         const height = await stageHeight(page);
-        const before = await showSeconds(page);
         await page.setViewportSize({ width: 390, height: 740 });
-        await expect.poll(() => showSeconds(page)).toBeGreaterThan(before);
+        await page.waitForTimeout(600);
         expect(await stageHeight(page)).toBe(height);
+        await expectNoRestart(page, before);
     });
 
     test("crossing into another band changes the stage's height without restarting time", async ({ page }) => {
         await page.goto("/");
-        await waitForRunning(page);
+        const before = await runUntil(page, 3);
         const height = await stageHeight(page);
-        const before = await showSeconds(page);
         await page.setViewportSize({ width: 390, height: 700 });
         await expect.poll(() => stageHeight(page)).toBeLessThan(height);
-        await expect.poll(() => showSeconds(page)).toBeGreaterThan(before);
+        await expectNoRestart(page, before);
     });
 });
 
