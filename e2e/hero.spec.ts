@@ -9,6 +9,14 @@ function hero(page: Page) {
     return page.locator("section.hero-show");
 }
 
+function markTurn(page: Page) {
+    return page.locator('section.hero-show img[src="/hero/mark-3d-turn.webp"]');
+}
+
+function markStill(page: Page) {
+    return page.locator('section.hero-show img[src="/hero/mark-3d.webp"]');
+}
+
 function stage(page: Page) {
     return page.locator("[data-show-stage]");
 }
@@ -30,8 +38,11 @@ test("the hero is the five-illustration stage and the 3D C alone, with no consol
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Changenius/);
     await expect(hero(page).getByRole("img", { name: SHOW_LABEL })).toBeVisible();
-    await expect(hero(page).locator('img[src="/hero/mark-3d.webp"]')).toHaveAttribute("alt", "");
-    await expect(hero(page).locator('[aria-hidden="true"] img[src="/hero/mark-3d.webp"]')).toHaveCount(1);
+    await expect(hero(page).locator('[aria-hidden="true"] img[src="/hero/mark-3d.webp"]')).toHaveAttribute("alt", "");
+    await expect(hero(page).locator('[aria-hidden="true"] img[src="/hero/mark-3d-turn.webp"]')).toHaveAttribute("alt", "");
+    await expect(markTurn(page)).toBeVisible();
+    await expect(markStill(page)).toBeHidden();
+    expect((await markTurn(page).boundingBox())!.width).toBe(page.viewportSize()!.width >= 640 ? 144 : 104);
     await expect(stage(page).locator("canvas")).toBeVisible();
     await expect(page.getByText("Meet Changenius.")).toHaveCount(0);
     await expect(hero(page).locator("p")).toHaveCount(0);
@@ -57,6 +68,8 @@ test("pause stops time and the backdrop video, and play resumes them", async ({ 
     await expect.poll(videoPaused).toBe(false);
     await page.getByRole("button", { name: "Pause animation" }).click();
     await expect.poll(videoPaused).toBe(true);
+    await expect(markStill(page)).toBeVisible();
+    await expect(markTurn(page)).toBeHidden();
     await page.waitForTimeout(500);
     const held = await showSeconds(page);
     await page.waitForTimeout(1_000);
@@ -64,6 +77,8 @@ test("pause stops time and the backdrop video, and play resumes them", async ({ 
     await page.getByRole("button", { name: "Play animation" }).click();
     await expect.poll(() => showSeconds(page)).toBeGreaterThan(held);
     await expect.poll(videoPaused).toBe(false);
+    await expect(markTurn(page)).toBeVisible();
+    await expect(markStill(page)).toBeHidden();
 });
 
 test("time stops while the hero is scrolled out of view", async ({ page }) => {
@@ -173,6 +188,8 @@ test.describe("reduced motion", () => {
         await expect(stage(page).locator("canvas")).toHaveCount(0);
         await expect(stage(page).getByText("CHANGENIUS")).toBeVisible();
         await expect(page.locator("video[data-hero-backdrop]")).toHaveCount(0);
+        await expect(markStill(page)).toBeVisible();
+        await expect(markTurn(page)).toBeHidden();
         await page.getByRole("button", { name: "Pause animation" }).click();
         await expect(page.getByRole("button", { name: "Play animation" })).toBeVisible();
         await expect(page.getByText("Meet Changenius.")).toHaveCount(0);
