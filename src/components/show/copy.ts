@@ -11,4 +11,4 @@ export const WORDS = [
 export const CLOSING_LINE = "The change is in us";
 
 export const SHOW_LABEL =
-    "Changenius: every change in your organisation governed end to end, powered by artificial intelligence grounded in your own policies, 150 AI agents prepare the work, your people decide, one chain covering strategy, planning, delivery and benefits realisation, a person signs every decision, on the record, every gain measured and written back to the strategy, built-in Genius automation keeps every step moving. The change is in us.";
+    "Changenius. Every change in your organisation, governed end to end. Powered by artificial intelligence, grounded in your own policies. 150 AI agents prepare the work; your people decide. One chain covering strategy, planning, delivery and benefits realisation. A person signs every decision, on the record. Every gain measured and written back to the strategy. Built-in Genius automation keeps every step moving. The change is in us.";

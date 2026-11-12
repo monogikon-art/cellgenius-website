@@ -30,6 +30,7 @@ describe("lettersOf", () => {
         expect(at).toHaveLength(9);
         expect(at[4]).toBeNull();
         expect(at.filter((i) => i !== null).every((i) => NAME[i!] !== undefined)).toBe(true);
+        expect(lettersOf("AGENTIC AI").slice(7)).toEqual([2, 7]);
     });
 });
 
