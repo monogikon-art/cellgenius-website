@@ -81,6 +81,23 @@ test("time stops while the hero is scrolled out of view", async ({ page }) => {
     expect(await showSeconds(page)).toBe(held);
 });
 
+test("time stops while the tab is hidden and resumes when it is shown again", async ({ page }) => {
+    await page.goto("/");
+    await waitForRunning(page);
+    const setVisibility = (state: "hidden" | "visible") =>
+        page.evaluate((value) => {
+            Object.defineProperty(document, "visibilityState", { configurable: true, get: () => value });
+            document.dispatchEvent(new Event("visibilitychange"));
+        }, state);
+    await setVisibility("hidden");
+    await page.waitForTimeout(600);
+    const held = await showSeconds(page);
+    await page.waitForTimeout(1_000);
+    expect(await showSeconds(page)).toBe(held);
+    await setVisibility("visible");
+    await expect.poll(() => showSeconds(page)).toBeGreaterThan(held);
+});
+
 async function runUntil(page: Page, seconds: number) {
     await expect.poll(() => showSeconds(page), { timeout: 15_000 }).toBeGreaterThanOrEqual(seconds);
     return showSeconds(page);
