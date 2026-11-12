@@ -3,6 +3,7 @@ import { caption, captionY, drawClosure, drawRestingName, nameLayout, seg, type 
 import { SCENES, type SceneId } from "../timeline";
 import { circuit } from "./circuit";
 import { particles } from "./particles";
+import { helix } from "./helix";
 
 function stubDraw(a: DrawArgs) {
     const { g, frame, phase, font } = a;
@@ -19,4 +20,4 @@ function stubDraw(a: DrawArgs) {
 
 const stubs = Object.fromEntries(SCENES.map((id) => [id, { id, draw: stubDraw }])) as Record<SceneId, Scene>;
 
-export const SCENE_BY_ID: Record<SceneId, Scene> = { ...stubs, circuit, particles };
+export const SCENE_BY_ID: Record<SceneId, Scene> = { ...stubs, circuit, particles, helix };
