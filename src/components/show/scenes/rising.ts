@@ -22,9 +22,11 @@ const GOLD_GLOW = "rgba(212,175,106,.75)";
 const AI_GLOW = "rgba(129,140,248,.6)";
 const WHITE_GLOW = "rgba(238,242,248,.28)";
 
-const nameAt = (frame: Frame): NameLayout => ({ ...nameLayout(frame), y: frame.narrow ? 560 : 430 });
+const nameAt = (frame: Frame): NameLayout => {
+    const lay = nameLayout(frame);
+    return { ...lay, ls: Math.round(lay.size * 0.02), y: frame.narrow ? 560 : 430 };
+};
 const wordY = (frame: Frame) => (frame.narrow ? 820 : 640);
-const captionGap = (frame: Frame) => (frame.narrow ? 110 : 130);
 
 type Slot = { ch: string; src: number | null; x: number; kind: "white" | "gold" | "ai" | "sheen" };
 type Built = { size: number; slots: Slot[]; left: number; span: number };
@@ -48,13 +50,11 @@ function build(a: DrawArgs, k: number): Built {
     const hit = cache.get(key);
     if (hit) return hit;
     const word = WORDS[k].word;
-    const lay = nameLayout(frame);
     const want = frame.narrow ? (word === "AGENTIC AI" ? 84 : 120) : 150;
-    const ratio = want / lay.size;
-    const probe = centres(g, word, fontOf(font, NAME_WEIGHT, want), lay.ls * ratio, frame.W / 2);
+    const probe = centres(g, word, fontOf(font, NAME_WEIGHT, want), Math.round(want * 0.02), frame.W / 2);
     const fit = Math.min(1, (frame.W * 0.92) / (probe[probe.length - 1] - probe[0] + want * 0.8));
     const size = want * fit;
-    const xs = centres(g, word, fontOf(font, NAME_WEIGHT, size), lay.ls * ratio * fit, frame.W / 2);
+    const xs = centres(g, word, fontOf(font, NAME_WEIGHT, size), Math.round(want * 0.02) * fit, frame.W / 2);
     const src = lettersOf(word);
     const slots: Slot[] = [];
     let n = 0;
@@ -112,7 +112,7 @@ function drawName(a: DrawArgs, lay: NameLayout, gold: number[], goldAmt: number,
     [...NAME].forEach((ch, i) => {
         const base = i === 2 || i === 7 ? C.ai : C.text;
         txt(g, ch, xs[i], lay.y + dy, f, base, alpha);
-        if (gold.includes(i) && goldAmt > 0) txt(g, ch, xs[i], lay.y + dy, f, C.goldHi, goldAmt * alpha, GOLD_GLOW, 36);
+        if (gold.includes(i) && goldAmt > 0) txt(g, ch, xs[i], lay.y + dy, f, C.goldHi, goldAmt * alpha, GOLD_GLOW, 18);
     });
 }
 
@@ -150,7 +150,7 @@ function drawWord(a: DrawArgs, k: number, p: number) {
         letter(g, s.ch, x, y, f, fill, alpha, glow, blur);
     });
 
-    const capY = wy + captionGap(frame);
+    const capY = wy + b.size * 0.62 + 60;
     caption(g, frame, font, WORDS[k].caption, capY, seg(p, 0.52, 0.62) * fo);
 }
 
