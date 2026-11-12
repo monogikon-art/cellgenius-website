@@ -58,6 +58,7 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
         let offY = 0;
         let dpr = 1;
         let cssW = 0;
+        let ratio = 0;
         let band = 0;
         let shown: SceneId | null = null;
         const prepared = new Map<SceneId, Frame>();
@@ -85,11 +86,13 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
         const layout = () => {
             const nextBand = bandHeight();
             const w = root.clientWidth;
-            if (w === cssW && nextBand === band) return;
+            const nextDpr = Math.min(2, window.devicePixelRatio || 1);
+            if (w === cssW && nextBand === band && nextDpr === ratio) return;
             cssW = w;
+            ratio = nextDpr;
             band = nextBand;
             root.style.setProperty("--show-h", `${band}px`);
-            dpr = Math.min(2, window.devicePixelRatio || 1);
+            dpr = nextDpr;
             canvas.width = Math.round(w * dpr);
             canvas.height = Math.round(band * dpr);
             frame = pickFrame(w, band);
@@ -118,6 +121,10 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
         };
 
         const ro = new ResizeObserver(layout);
+        const onVisible = () => {
+            if (document.visibilityState === "visible") last = 0;
+        };
+        document.addEventListener("visibilitychange", onVisible);
         void document.fonts.ready.then(() => {
             if (cancelled) return;
             family = getComputedStyle(document.body).fontFamily;
@@ -132,6 +139,7 @@ export function ShowStage({ running, reduced }: { running: boolean; reduced: boo
             resumeRef.current = () => undefined;
             if (raf) cancelAnimationFrame(raf);
             ro.disconnect();
+            document.removeEventListener("visibilitychange", onVisible);
         };
     }, [reduced]);
 

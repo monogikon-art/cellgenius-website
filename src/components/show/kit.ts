@@ -36,6 +36,11 @@ export const rng = (seed: number) => () => {
 
 export const fontOf = (family: string, weight: number, size: number) => `${weight} ${size}px ${family}`;
 
+export function setGlow(g: Ctx, color: string, blur: number) {
+    g.shadowColor = color;
+    g.shadowBlur = blur * g.getTransform().a;
+}
+
 export function txt(
     g: Ctx,
     s: string,
@@ -56,8 +61,7 @@ export function txt(
     g.textBaseline = "middle";
     g.letterSpacing = `${ls}px`;
     if (glow) {
-        g.shadowColor = glow;
-        g.shadowBlur = blur;
+        setGlow(g, glow, blur);
     }
     g.fillStyle = fill;
     g.fillText(s, x, y);
@@ -73,8 +77,7 @@ export function line(g: Ctx, pts: number[][], color: string, w: number, blur = 0
     g.lineJoin = "round";
     g.lineCap = "round";
     if (blur) {
-        g.shadowColor = color;
-        g.shadowBlur = blur;
+        setGlow(g, color, blur);
     }
     g.beginPath();
     pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
@@ -88,8 +91,7 @@ export function dot(g: Ctx, x: number, y: number, r: number, color: string, blur
     g.globalAlpha *= alpha;
     g.fillStyle = color;
     if (blur) {
-        g.shadowColor = color;
-        g.shadowBlur = blur;
+        setGlow(g, color, blur);
     }
     g.beginPath();
     g.arc(x, y, r, 0, Math.PI * 2);
@@ -138,8 +140,7 @@ export function holo(g: Ctx, frame: Frame, family: string, s: string, x: number,
     for (let yy = y - size / 2; yy < y + size / 2; yy += 7) h.fillRect(0, yy, frame.W, 2);
     g.save();
     g.globalAlpha *= alpha;
-    g.shadowColor = "rgba(240,210,154,.55)";
-    g.shadowBlur = 40;
+    setGlow(g, "rgba(240,210,154,.55)", 40);
     g.drawImage(holoCanvas, 0, 0);
     g.restore();
     g.save();
@@ -149,6 +150,30 @@ export function holo(g: Ctx, frame: Frame, family: string, s: string, x: number,
 }
 
 export const captionY = (frame: Frame) => (frame.narrow ? 850 : 720);
+
+export function wrapLines(text: string, maxW: number, measure: (s: string) => number): string[] {
+    const lines: string[] = [];
+    let cur = "";
+    for (const w of text.split(" ")) {
+        const next = cur ? `${cur} ${w}` : w;
+        if (cur && measure(next) > maxW) {
+            lines.push(cur);
+            cur = w;
+        } else cur = next;
+    }
+    lines.push(cur);
+    return lines;
+}
+
+export function fitCaption(text: string, size: number, maxW: number, measureAt: (s: string, size: number) => number) {
+    let s = size;
+    let lines = wrapLines(text, maxW, (t) => measureAt(t, s));
+    while (lines.length > 2 && s > 20) {
+        s -= 2;
+        lines = wrapLines(text, maxW, (t) => measureAt(t, s));
+    }
+    return { size: s, lines };
+}
 
 export function caption(
     g: Ctx,
@@ -160,24 +185,16 @@ export function caption(
     color = C.text,
 ) {
     if (alpha <= 0) return;
-    const size = frame.narrow ? 52 : 44;
+    const measureAt = (t: string, size: number) => {
+        g.save();
+        g.font = fontOf(family, 500, size);
+        g.letterSpacing = "0px";
+        const w = g.measureText(t).width;
+        g.restore();
+        return w;
+    };
+    const { size, lines } = fitCaption(text, frame.narrow ? 52 : 44, frame.W * 0.8, measureAt);
     const f = fontOf(family, 500, size);
-    const maxW = frame.W * 0.8;
-    g.save();
-    g.font = f;
-    g.letterSpacing = "0px";
-    const words = text.split(" ");
-    const lines: string[] = [];
-    let cur = "";
-    for (const w of words) {
-        const next = cur ? `${cur} ${w}` : w;
-        if (cur && g.measureText(next).width > maxW) {
-            lines.push(cur);
-            cur = w;
-        } else cur = next;
-    }
-    lines.push(cur);
-    g.restore();
     const lead = size * 1.25;
     const top = y - ((lines.length - 1) * lead) / 2;
     lines.forEach((l, i) => txt(g, l, frame.W / 2, top + i * lead, f, color, alpha, "rgba(7,11,22,.9)", 18));
@@ -204,11 +221,12 @@ export function drawClosure(a: DrawArgs, p: number, from: NameLayout) {
         const x = rest[src] + (target[slot] - rest[src]) * glide;
         const ch = letters[src];
         const gold = slot >= 6;
+        const start = ch === "A" || src === 7 ? C.ai : C.text;
         if (gold) {
-            txt(g, ch, x, from.y, f, C.text, 1 - glide, undefined, 0, 0);
+            txt(g, ch, x, from.y, f, start, 1 - glide, undefined, 0, 0);
             txt(g, ch, x, from.y, f, C.goldHi, glide, "rgba(212,175,106,.7)", 36, 0);
         } else {
-            txt(g, ch, x, from.y, f, ch === "A" ? C.ai : C.text, 1, undefined, 0, 0);
+            txt(g, ch, x, from.y, f, start, 1, undefined, 0, 0);
         }
     });
     caption(g, frame, font, CLOSING_LINE, captionY(frame), ease(seg(p, 0.3, 0.5)), C.gold);
