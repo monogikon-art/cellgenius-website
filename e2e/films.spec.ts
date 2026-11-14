@@ -10,7 +10,7 @@ test("the featured film opens in the viewer and Escape returns focus", async ({ 
     await tile.click();
     const dialog = page.getByRole("dialog", { name: "The Changenius film" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator("video")).toHaveAttribute("src", "/media/films/changenius-film-exec-v4.mp4");
+    await expect(dialog.locator("video")).toHaveAttribute("src", "/media/films/changenius-film-exec-v6.mp4");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(tile).toBeFocused();
