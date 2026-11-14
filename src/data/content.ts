@@ -16,8 +16,8 @@ const media = (path: string) => `/media${path}`;
 
 export const FEATURED_FILM: Film = {
     title: "The Changenius film",
-    src: media("/films/changenius-film-exec-v6.mp4"),
-    poster: media("/films/changenius-film-exec-v6-poster.jpg"),
+    src: media("/films/changenius-film-exec-v7.mp4"),
+    poster: media("/films/changenius-film-exec-v7-poster.jpg"),
     seconds: 291,
 };
 
